@@ -1,0 +1,155 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Admin Panel - OTT Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Tab Navigation -->
+    <div class="admin-tabs">
+        <button class="tab-btn active" data-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</button>
+        <button class="tab-btn" data-tab="edit"><i class="fas fa-edit"></i> Edit Movie</button>
+        <button class="tab-btn" data-tab="submissions"><i class="fas fa-inbox"></i> Submissions ({{ pending_submissions }})</button>
+    </div>
+
+    <!-- Dashboard Tab -->
+    <div class="tab-content active" id="dashboard">
+        <div class="admin-stats">
+            <div class="stat-card">
+                <i class="fas fa-film"></i>
+                <h3>{{ total_movies }}</h3>
+                <p>Active Movies</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-inbox"></i>
+                <h3>{{ total_submissions }}</h3>
+                <p>Total Submissions</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-clock"></i>
+                <h3>{{ pending_submissions }}</h3>
+                <p>Pending Requests</p>
+            </div>
+        </div>
+
+        <div class="admin-section">
+            <h2><i class="fas fa-tools"></i> Maintenance Tools</h2>
+            <div class="tool-buttons">
+                <button onclick="alert('Run: python -m scripts.enrich_existing')" class="tool-btn">
+                    <i class="fas fa-sync"></i> Enrich Database
+                </button>
+                <button onclick="alert('Run: python -m scripts.bulk_import')" class="tool-btn">
+                    <i class="fas fa-download"></i> Bulk Import
+                </button>
+                <button onclick="alert('Run: python -m scripts.export_db')" class="tool-btn">
+                    <i class="fas fa-file-export"></i> Export Database
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Movie Tab -->
+    <div class="tab-content" id="edit">
+        <div class="admin-section">
+            <h2><i class="fas fa-search"></i> Search Movie</h2>
+            <form method="POST" action="{{ url_for('admin_movie_search') }}" class="search-movie-form">
+                <input type="text" name="search_query" placeholder="Enter TMDB ID or movie title..." required>
+                <button type="submit"><i class="fas fa-search"></i> Search</button>
+            </form>
+            <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
+                <i class="fas fa-info-circle"></i> Search by TMDB ID for exact match, or type movie name for close match (50%+ similarity)
+            </p>
+        </div>
+    </div>
+
+    <!-- Submissions Tab -->
+    <div class="tab-content" id="submissions">
+        <div class="admin-section">
+            <h2><i class="fas fa-inbox"></i> User Submissions <span style="color: var(--text-secondary); font-size: 0.9rem;">(Showing 20 most recent)</span></h2>
+            
+            {% if submissions %}
+            <div class="submissions-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Movie Title</th>
+                            <th>Type</th>
+                            <th>Platform</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                        <tr>
+                            <td class="title-col">
+                                <strong>{{ submission.movie_title }}</strong>
+                                {% if submission.comment %}
+                                <br><small>{{ submission.comment[:50] }}{% if submission.comment|length > 50 %}...{% endif %}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ submission.submission_type }}">
+                                    {{ submission.submission_type|title }}
+                                </span>
+                            </td>
+                            <td>{{ submission.platform_name or '—' }}</td>
+                            <td>
+                                <span class="badge badge-{{ submission.status }}">
+                                    {{ submission.status|title }}
+                                </span>
+                            </td>
+                            <td>{{ submission.created_at.strftime('%b %d, %Y') }}</td>
+                            <td class="actions-col">
+                                {% if submission.status == 'pending' %}
+                                <form method="POST" action="{{ url_for('admin_submission_update', id=submission.id) }}" style="display: inline;">
+                                    <button type="submit" name="action" value="approve" class="action-btn approve">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin_submission_update', id=submission.id) }}" style="display: inline;">
+                                    <button type="submit" name="action" value="reject" class="action-btn reject">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('admin_submission_delete', id=submission.id) }}" style="display: inline;" onsubmit="return confirm('Delete this submission?')">
+                                    <button type="submit" class="action-btn delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No submissions yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Tab switching logic
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const tabName = btn.dataset.tab;
+        
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Show corresponding content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(tabName).classList.add('active');
+    });
+});
+</script>
+{% endblock %}

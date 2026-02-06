@@ -1,0 +1,930 @@
+{% extends "base.html" %}
+
+{% block title %}{{ movie.title }} - OTT Tracker{% endblock %}
+
+{% block content %}
+<!-- Movie Hero Banner -->
+<div class="movie-detail-hero" style="position: relative; height: 450px; background: linear-gradient(135deg, #1a1a1a, #0a0a0a); overflow: hidden;">
+    {% if movie.backdrop %}
+    <img src="{{ movie.backdrop }}" 
+         srcset="{{ movie.backdrop.replace('w1280', 'w780') }} 768w, {{ movie.backdrop }} 1280w"
+         sizes="(max-width: 768px) 100vw, 1280px"
+         alt="{{ movie.title }}" 
+         loading="eager" 
+         fetchpriority="high"
+         style="width: 100%; height: 100%; object-fit: cover; opacity: 0.5;">
+    {% else %}
+    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--bg-card), var(--bg-body));"></div>
+    {% endif %}
+    
+    <!-- Overlay Gradient with Blur -->
+    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, transparent 10%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.95) 100%); backdrop-filter: blur(5px);"></div>
+    
+    <!-- Movie Info Overlay -->
+    <div style="position: absolute; bottom: 0; left: 0; right: 0; color: var(--text-primary); display: flex; align-items: flex-end; padding-bottom: 3rem;">
+        <div class="container" style="display: grid; grid-template-columns: 220px 1fr; gap: 2.5rem; align-items: flex-end;">
+            <!-- Poster -->
+            <div>
+                {% if movie.poster %}
+                <img src="{{ movie.poster }}" 
+                     srcset="{{ movie.poster.replace('w500', 'w342') }} 342w, {{ movie.poster }} 500w"
+                     sizes="(max-width: 768px) 180px, 220px"
+                     alt="{{ movie.title }}" 
+                     loading="eager"
+                     style="width: 100%; border-radius: var(--radius-md); border: 3px solid var(--accent-primary); box-shadow: 0 12px 32px rgba(0,0,0,0.7);">
+                {% endif %}
+            </div>
+            
+            <!-- Title & Quick Info -->
+            <div>
+                <div style="display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div style="flex: 1;">
+                        <h1 style="font-size: 2.8rem; margin: 0 0 0.5rem 0; line-height: 1.2;">{{ movie.title }}</h1>
+                        {% if movie.release_date %}
+                        <p style="color: var(--text-secondary); margin: 0; font-size: 1rem;">{{ movie.release_date[:4] }}</p>
+                        {% endif %}
+                    </div>
+                    {% if status %}
+                    <div style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--accent-primary), #ff1744); border-radius: 999px; font-size: 1rem; font-weight: 700; white-space: nowrap; text-align: center;">
+                        <i class="fas fa-fire"></i> {{ status }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Quick Info Chips -->
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+                    {% if movie.rating %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(255,193,7,0.15); border-radius: 999px; border: 1px solid rgba(255,193,7,0.3);">
+                        <i class="fas fa-star" style="color: #ffc107;"></i>
+                        <span style="font-weight: 600;">{{ "%.1f"|format(movie.rating) }}/10</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if movie.runtime %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(76,175,80,0.15); border-radius: 999px; border: 1px solid rgba(76,175,80,0.3);">
+                        <i class="fas fa-hourglass-half" style="color: #4caf50;"></i>
+                        <span style="font-weight: 600;">{{ movie.runtime }}m</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if movie.language %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(33,150,243,0.15); border-radius: 999px; border: 1px solid rgba(33,150,243,0.3);">
+                        {% if movie.language == 'te' %}<i class="fas fa-globe" style="color: #2196f3;"></i> 🇮🇳 Telugu{% elif movie.language == 'ta' %}<i class="fas fa-globe" style="color: #2196f3;"></i> 🇮🇳 Tamil{% elif movie.language == 'hi' %}<i class="fas fa-globe" style="color: #2196f3;"></i> 🇮🇳 Hindi{% elif movie.language == 'kn' %}<i class="fas fa-globe" style="color: #2196f3;"></i> 🇮🇳 Kannada{% elif movie.language == 'ml' %}<i class="fas fa-globe" style="color: #2196f3;"></i> 🇮🇳 Malayalam{% else %}<span style="font-weight: 600;">{{ movie.language.upper() }}</span>{% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if movie.certification %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(229,9,20,0.15); border-radius: 999px; border: 1px solid rgba(229,9,20,0.3);">
+                        <i class="fas fa-shield-alt" style="color: #e50914;"></i>
+                        <span style="font-weight: 600;">{{ movie.certification }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    {% if movie.youtube_trailer_id or movie.trailer %}
+                    <button type="button" class="hero-trailer-btn" data-youtube-id="{{ movie.youtube_trailer_id }}" data-trailer="{{ movie.trailer or '' }}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(229,9,20,0.9); border-radius: 999px; border: none; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                        <i class="fas fa-play-circle"></i>
+                        <span>▶ Watch Trailer</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container movie-detail-content">
+    <div class="movie-content-grid" style="display: grid; grid-template-columns: 1fr 340px; gap: 2rem; max-width: 1400px; margin: 0 auto; width: 100%;">
+        <!-- Add Mobile-Responsive Styling -->
+        <style>
+            @media (max-width: 1024px) {
+                .movie-content-grid {
+                    grid-template-columns: 1fr 300px !important;
+                    gap: 1.5rem !important;
+                }
+            }
+            
+            @media (max-width: 768px) {
+                .movie-content-grid {
+                    grid-template-columns: 1fr !important;
+                    gap: 1rem !important;
+                }
+                
+                .movie-detail-content {
+                    padding: 20px 16px 90px 16px !important;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .movie-detail-hero {
+                    height: 280px !important;
+                }
+                
+                .movie-detail-content {
+                    padding: 16px 12px 90px 12px !important;
+                }
+            }
+        </style>
+        <!-- Main Content -->
+        <div>
+            <!-- Overview Section -->
+            {% if movie.overview %}
+            <section style="margin-bottom: 3.5rem;">
+                <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
+                    <i class="fas fa-align-left" style="color: var(--accent-primary); font-size: 1.3rem;"></i> Overview
+                </h2>
+                <p style="line-height: 1.9; color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 0;">{{ movie.overview }}</p>
+            </section>
+            {% endif %}
+
+            <!-- Genres & Tags Section -->
+            {% if movie.genres %}
+            <section style="margin-bottom: 3.5rem;">
+                <h2 style="margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
+                    <i class="fas fa-tags" style="color: var(--accent-primary); font-size: 1.3rem;"></i> Genres & Categories
+                </h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                    {% for genre in movie.genres.split(',') %}
+                    <span style="padding: 0.6rem 1.2rem; background: linear-gradient(135deg, rgba(229,9,20,0.2), rgba(255,87,34,0.2)); border: 1px solid var(--accent-primary); border-radius: 999px; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(229,9,20,0.3)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(229,9,20,0.2), rgba(255,87,34,0.2))'">
+                        <i class="fas fa-bookmark" style="margin-right: 0.5rem; color: var(--accent-primary);"></i>{{ genre.strip() }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- Audio & Language Info -->
+            {% if movie.is_dubbed or movie.has_telugu_audio or movie.language %}
+            <section style="margin-bottom: 3.5rem;">
+                <h2 style="margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
+                    <i class="fas fa-volume-up" style="color: var(--accent-primary); font-size: 1.3rem;"></i> Audio & Language
+                </h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                    {% if movie.language == 'te' and not movie.is_dubbed %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.2rem; background: rgba(76,175,80,0.15); border: 1.5px solid rgba(76,175,80,0.5); border-radius: 8px; font-size: 0.95rem; font-weight: 600;">
+                        <i class="fas fa-film" style="color: #4caf50;"></i> 🎬 Telugu Original
+                    </span>
+                    {% endif %}
+                    {% if movie.is_dubbed %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.2rem; background: rgba(229,9,20,0.15); border: 1.5px solid rgba(229,9,20,0.5); border-radius: 8px; font-size: 0.95rem; font-weight: 600;">
+                        <i class="fas fa-microphone" style="color: #e50914;"></i> 🔊 Dubbed
+                    </span>
+                    {% endif %}
+                    {% if movie.has_telugu_audio %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.2rem; background: rgba(0,188,212,0.15); border: 1.5px solid rgba(0,188,212,0.5); border-radius: 8px; font-size: 0.95rem; font-weight: 600;">
+                        <i class="fas fa-headphones" style="color: #00bcd4;"></i> 🎤 Telugu Audio
+                    </span>
+                    {% endif %}
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- Available Languages Section -->
+            <section style="margin-bottom: 3.5rem;">
+                <h2 style="margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
+                    <i class="fas fa-globe" style="color: var(--accent-primary); font-size: 1.3rem;"></i> Available Languages
+                </h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                    {% set lang_dict = {
+                        'te': {'name': 'Telugu', 'flag': '🇮🇳', 'color': '#FF9500'},
+                        'ta': {'name': 'Tamil', 'flag': '🇮🇳', 'color': '#E91E63'},
+                        'hi': {'name': 'Hindi', 'flag': '🇮🇳', 'color': '#1976D2'},
+                        'en': {'name': 'English', 'flag': '🇬🇧', 'color': '#2196F3'},
+                        'kn': {'name': 'Kannada', 'flag': '🇮🇳', 'color': '#4CAF50'},
+                        'ml': {'name': 'Malayalam', 'flag': '🇮🇳', 'color': '#00BCD4'}
+                    } %}
+                    {% set primary_lang = movie.language if movie.language else 'te' %}
+                    {% set lang_info = lang_dict.get(primary_lang, {'name': primary_lang.upper(), 'flag': '🌐', 'color': '#9C27B0'}) %}
+                    
+                    <!-- Primary Language -->
+                    <span style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, rgba({{ lang_info.color }}, 0.2), rgba({{ lang_info.color }}, 0.1)); border: 2px solid {{ lang_info.color }}; border-radius: 8px; font-size: 1rem; font-weight: 600; color: var(--text-primary); position: relative;">
+                        <span style="font-size: 1.3rem;">{{ lang_info.flag }}</span>
+                        <span>{{ lang_info.name }}</span>
+                        <span style="position: absolute; top: -8px; right: 10px; background: {{ lang_info.color }}; color: white; font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 999px; font-weight: 700;">PRIMARY</span>
+                    </span>
+                    
+                    <!-- Additional Language: English (if not primary) -->
+                    {% if primary_lang != 'en' %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.5rem; background: rgba(33,150,243,0.1); border: 1.5px solid rgba(33,150,243,0.5); border-radius: 8px; font-size: 0.95rem; font-weight: 500; color: var(--text-primary);">
+                        <span style="font-size: 1.2rem;">🇬🇧</span> English (if available)
+                    </span>
+                    {% endif %}
+                    
+                    <!-- Additional Language: Hindi (if not primary) -->
+                    {% if primary_lang != 'hi' %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.5rem; background: rgba(25,118,210,0.1); border: 1.5px solid rgba(25,118,210,0.5); border-radius: 8px; font-size: 0.95rem; font-weight: 500; color: var(--text-primary);">
+                        <span style="font-size: 1.2rem;">🇮🇳</span> Hindi (if available)
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Language Note -->
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 1rem; padding: 0.8rem 1.2rem; background: rgba(255,193,7,0.1); border-left: 3px solid #FFC107; border-radius: 4px;">
+                    <i class="fas fa-info-circle" style="color: #FFC107; margin-right: 0.5rem;"></i>
+                    Language availability depends on the OTT platform. Check availability on each platform for detailed language options.
+                </p>
+            </section>
+
+            <!-- Cast Ribbon Section (Zero-Download, Live TMDB Images) -->
+            {% if movie.cast %}
+            <section style="margin-bottom: 3.5rem;">
+                <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
+                    <i class="fas fa-users" style="color: var(--accent-primary); font-size: 1.3rem;"></i> Cast
+                </h2>
+                
+                <!-- Cast Grid Container (Wraps to multiple rows) -->
+                <div style="
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                    gap: 2rem;
+                    padding-bottom: 0.5rem;
+                " class="cast-grid" id="cast-ribbon">
+                    
+                    <!-- Cast items will be rendered here -->
+                </div>
+                
+                <!-- CSS for Cast Grid & Mobile Optimization -->
+                <style>
+                    .cast-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                        gap: 2rem;
+                        width: 100%;
+                    }
+                    
+                    /* Responsive: Tablet & Below */
+                    @media (max-width: 1024px) {
+                        .cast-grid {
+                            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                            gap: 1.5rem;
+                        }
+                    }
+                    
+                    /* Mobile optimization */
+                    @media (max-width: 768px) {
+                        .cast-grid {
+                            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                            gap: 1rem;
+                        }
+                    }
+                    
+                    .cast-avatar-img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        border-radius: 50%;
+                    }
+                </style>
+                
+                <!-- Cast Grid Script (Fetches TMDB images for actors) -->
+                <script>
+                (function() {
+                    const castRibbon = document.getElementById('cast-ribbon');
+                    const castDataRaw = `{{ movie.cast | safe }}`;
+                    const tmdbApiKey = 'e99307154fabc578ecbacc3a4c5832b8'; // Public API key
+                    
+                    // Try to parse as JSON first (new format with profile_path)
+                    let castList = [];
+                    try {
+                        const parsed = JSON.parse(castDataRaw);
+                        castList = Array.isArray(parsed) ? parsed : [];
+                    } catch (e) {
+                        // Fall back to string format (comma-separated names)
+                        castList = castDataRaw.split(',').map(name => ({
+                            name: name.trim(),
+                            profile_path: null
+                        })).filter(c => c.name);
+                    }
+                    
+                    // Render cast items (limit to 20)
+                    castList.slice(0, 20).forEach((actor, index) => {
+                        const actorName = actor.name || actor;
+                        const actorSlug = actorName.toLowerCase().replace(/\s+/g, '-');
+                        let profilePath = actor.profile_path;
+                        const initials = actorName.charAt(0).toUpperCase();
+                        
+                        const castItem = document.createElement('a');
+                        castItem.href = `/person/${actorSlug}`;
+                        castItem.style.cssText = `
+                            text-decoration: none;
+                            color: inherit;
+                            text-align: center;
+                            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                            cursor: pointer;
+                            display: flex;
+                            flex-direction: column;
+                            gap: 0.8rem;
+                        `;
+                        
+                        const avatarContainer = document.createElement('div');
+                        avatarContainer.style.cssText = `
+                            position: relative;
+                            width: 120px;
+                            height: 120px;
+                            margin: 0 auto;
+                            border-radius: 50%;
+                            overflow: hidden;
+                            border: 3px solid transparent;
+                            background: linear-gradient(135deg, var(--accent-primary), #ff1744);
+                            padding: 3px;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 8px 24px rgba(229, 9, 20, 0.2);
+                        `;
+                        
+                        avatarContainer.onmouseover = function() {
+                            this.style.borderColor = 'var(--accent-primary)';
+                            this.style.boxShadow = '0 12px 32px rgba(229, 9, 20, 0.4)';
+                        };
+                        avatarContainer.onmouseout = function() {
+                            this.style.borderColor = 'transparent';
+                            this.style.boxShadow = '0 8px 24px rgba(229, 9, 20, 0.2)';
+                        };
+                        
+                        const imageContainer = document.createElement('div');
+                        
+                        // Generate color based on actor name for unique initial backgrounds
+                        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
+                        const colorIndex = actorName.charCodeAt(0) % colors.length;
+                        const bgColor = colors[colorIndex];
+                        
+                        imageContainer.style.cssText = `
+                            width: 100%;
+                            height: 100%;
+                            border-radius: 50%;
+                            overflow: hidden;
+                            background: linear-gradient(135deg, ${bgColor}80, ${bgColor}40);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            position: relative;
+                        `;
+                        
+                        // Initial background with name (VISIBLE IMMEDIATELY - NO FLASH)
+                        const fallbackSpan = document.createElement('span');
+                        fallbackSpan.style.cssText = `
+                            position: absolute;
+                            font-weight: 700;
+                            font-size: 2.5rem;
+                            color: rgba(255, 255, 255, 0.95);
+                            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+                            z-index: 1;
+                        `;
+                        fallbackSpan.textContent = initials;
+                        imageContainer.appendChild(fallbackSpan);
+                        
+                        // If profile_path exists, show image
+                        if (profilePath) {
+                            const img = document.createElement('img');
+                            img.src = `https://image.tmdb.org/t/p/w185${profilePath}`;
+                            img.alt = actorName;
+                            img.className = 'cast-avatar-img';
+                            img.onerror = function() {
+                                this.style.display = 'none';
+                            };
+                            imageContainer.appendChild(img);
+                        } else {
+                            // Fetch actor image from TMDB API (only if not already cached)
+                            fetch(`https://api.themoviedb.org/3/search/person?api_key=${tmdbApiKey}&query=${encodeURIComponent(actorName)}&page=1`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.results && data.results.length > 0) {
+                                        const person = data.results[0];
+                                        if (person.profile_path) {
+                                            const img = document.createElement('img');
+                                            img.src = `https://image.tmdb.org/t/p/w185${person.profile_path}`;
+                                            img.alt = actorName;
+                                            img.className = 'cast-avatar-img';
+                                            img.style.cssText = `position: absolute; top: 0; left: 0; z-index: 2;`;
+                                            img.onerror = function() {
+                                                this.remove();
+                                            };
+                                            imageContainer.appendChild(img);
+                                        }
+                                    }
+                                })
+                                .catch(err => console.log(`Could not fetch image for ${actorName}`));
+                        }
+                        
+                        avatarContainer.appendChild(imageContainer);
+                        
+                        const nameContainer = document.createElement('div');
+                        const nameText = document.createElement('p');
+                        nameText.style.cssText = `
+                            font-weight: 600;
+                            font-size: 0.9rem;
+                            margin: 0;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            color: var(--text-primary);
+                        `;
+                        nameText.textContent = actorName;
+                        
+                        const roleText = document.createElement('p');
+                        roleText.style.cssText = `
+                            font-size: 0.75rem;
+                            color: var(--text-secondary);
+                            margin: 0;
+                        `;
+                        roleText.textContent = 'Cast Member';
+                        
+                        nameContainer.appendChild(nameText);
+                        nameContainer.appendChild(roleText);
+                        
+                        castItem.appendChild(avatarContainer);
+                        castItem.appendChild(nameContainer);
+                        
+                        // Add hover effect
+                        castItem.onmouseover = function() {
+                            this.style.transform = 'translateY(-8px) scale(1.05)';
+                        };
+                        castItem.onmouseout = function() {
+                            this.style.transform = 'translateY(0) scale(1)';
+                        };
+                        
+                        castRibbon.appendChild(castItem);
+                    });
+                })();
+                </script>
+            </section>
+            {% endif %}
+
+
+
+            <!-- Similar Movies Section -->
+            {% if similar_movies %}
+            <section style="margin-bottom: 3.5rem;">
+                <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
+                    <i class="fas fa-film" style="color: var(--accent-primary); font-size: 1.3rem;"></i> More Like This
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem;">
+                    {% for sim_movie in similar_movies %}
+                    <a href="{{ url_for('movie_detail', movie_identifier=sim_movie.title|movie_slug) }}" style="text-decoration: none; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.08)'; this.children[0].style.boxShadow='0 12px 32px rgba(229,9,20,0.5)'" onmouseout="this.style.transform='scale(1)'; this.children[0].style.boxShadow='0 8px 16px rgba(0,0,0,0.4)'">
+                        <div style="position: relative; padding-bottom: 150%; overflow: hidden; border-radius: var(--radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.4); transition: all 0.3s ease;">
+                            {% if sim_movie.poster %}
+                            <img src="{{ sim_movie.poster }}" alt="{{ sim_movie.title }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.1)); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-image" style="font-size: 2rem; color: var(--text-secondary);"></i>
+                            </div>
+                            {% endif %}
+                            <!-- Hover Rating Badge -->
+                            {% if sim_movie.rating %}
+                            <div style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.5rem 0.8rem; background: rgba(0,0,0,0.8); border-radius: 6px; font-weight: 700; font-size: 0.9rem; color: #ffc107; border: 1px solid rgba(255,193,7,0.5);">
+                                <i class="fas fa-star" style="margin-right: 0.3rem;"></i>{{ "%.1f"|format(sim_movie.rating) }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div style="margin-top: 0.75rem;">
+                            <p style="margin: 0; font-weight: 600; font-size: 0.95rem; color: var(--text-primary); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ sim_movie.title }}</p>
+                            {% if sim_movie.release_date %}
+                            <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">{{ sim_movie.release_date[:4] }}</p>
+                            {% endif %}
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+            <!-- Release Dates Card -->
+            <div style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+                <h3 style="margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem;">
+                    <i class="fas fa-calendar-alt" style="color: var(--accent-primary); font-size: 1.1rem;"></i> <span style="flex: 1;">Release Dates</span>
+                </h3>
+                
+                {% if movie.release_date %}
+                <!-- Theatrical Release -->
+                <div style="padding: 1rem; background: rgba(33,150,243,0.1); border-left: 3px solid #2196f3; border-radius: 6px; margin-bottom: 1rem;">
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <i class="fas fa-film" style="margin-right: 0.5rem; color: #2196f3;"></i> Theatrical Release
+                    </div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">
+                        {{ movie.release_date | strftime('%B %d, %Y') if movie.release_date else movie.release_date }}
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem;">
+                        {{ movie.release_date[:4] }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- OTT Release Dates (will be shown below each platform) -->
+                <div style="font-size: 0.85rem; color: var(--text-secondary); padding: 0.8rem; background: rgba(255,193,7,0.1); border-radius: 6px; margin-top: 0.5rem;">
+                    <i class="fas fa-info-circle" style="color: #ffc107; margin-right: 0.5rem;"></i>
+                    <strong>OTT release dates</strong> shown with each platform below
+                </div>
+            </div>
+
+            <!-- Where to Watch Card -->
+            <div style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+                <h3 style="margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem;">
+                    <i class="fas fa-tv" style="color: var(--accent-primary); font-size: 1.1rem;"></i> Where to Watch
+                </h3>
+                
+                {% if ott_data %}
+                    <div class="where-watch">
+                        {% set ott_list = ott_data.items() | list %}
+                        {% set ott_priority = {
+                            'netflix': 1, 'prime': 2, 'amazon': 2, 'hotstar': 3, 
+                            'jiocinema': 4, 'zee5': 5, 'airtel': 6
+                        } %}
+                        {% set sorted_otts = ott_list | sort(attribute=0) %}
+                        
+                        <!-- Primary OTT Links (Max 2) -->
+                        {% set primary_count = [0] %}
+                        {% for platform, info in sorted_otts %}
+                        {% if primary_count[0] < 2 %}
+                        {% set ott_link = info.get('link') or info.get('url') if info else '' %}
+                        {% if info and ott_link %}
+                        {% set platform_class = platform|lower|replace(' ', '-')|replace('+', 'plus')|replace('&', 'and')|replace('/', '-')|replace('.', '')|replace(':', '') %}
+                        <a href="{{ ott_link }}" target="_blank" rel="noopener noreferrer" class="ott-btn ott-{{ platform_class }}" style="margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                                {% if info.get('logo') %}
+                                <img src="{{ info.logo }}" alt="{{ platform }}" class="ott-btn-logo" loading="lazy" style="max-height: 24px;">
+                                {% else %}
+                                <span class="ott-btn-logo ott-btn-fallback">{{ platform[:1].upper() }}</span>
+                                {% endif %}
+                                <div>
+                                    <span style="font-weight: 600; display: block;">Watch on {{ platform }}</span>
+                                    <!-- OTT Release Date -->
+                                    {% if info.get('last_change_date') or info.get('release_date') %}
+                                    <span style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 0.2rem;">
+                                        <i class="fas fa-calendar-check" style="margin-right: 0.3rem;"></i>
+                                        Available since: {{ (info.get('last_change_date') or info.get('release_date')) | strftime('%b %d, %Y') if (info.get('last_change_date') or info.get('release_date')) else 'Date not available' }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if info.get('is_free') or (info.get('monetization_type') == 'free') %}
+                            <span class="ott-badge-pill" style="font-size: 10px;">FREE</span>
+                            {% elif info.get('rent') %}
+                            <span class="ott-badge-pill" style="font-size: 10px;">RENT</span>
+                            {% elif info.get('buy') %}
+                            <span class="ott-badge-pill" style="font-size: 10px;">BUY</span>
+                            {% endif %}
+                        </a>
+                        {% set _ = primary_count.append(primary_count.pop() + 1) %}
+                        {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <!-- "More OTTs" Button -->
+                        {% if ott_list | length > 2 %}
+                        <button type="button" onclick="var container = this.nextElementSibling; container.style.display = container.style.display === 'none' ? 'block' : 'none'; this.innerHTML = container.style.display === 'none' ? '<i class=\'fas fa-chevron-down\'></i> Show ' + ({{ ott_list | length }} - 2) + ' more' : '<i class=\'fas fa-chevron-up\'></i> Hide';" style="width: 100%; padding: 0.8rem 1rem; background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-primary); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; margin-top: 0.5rem;">
+                            <i class="fas fa-chevron-down"></i> Show {{ ott_list | length - 2 }} more
+                        </button>
+                        
+                        <!-- Hidden OTTs Container -->
+                        <div style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                            {% set hidden_count = [0] %}
+                            {% for platform, info in sorted_otts %}
+                            {% if hidden_count[0] >= 2 %}
+                            {% set ott_link = info.get('link') or info.get('url') if info else '' %}
+                            {% if info and ott_link %}
+                            {% set platform_class = platform|lower|replace(' ', '-')|replace('+', 'plus')|replace('&', 'and')|replace('/', '-')|replace('.', '')|replace(':', '') %}
+                            <a href="{{ ott_link }}" target="_blank" rel="noopener noreferrer" class="ott-btn ott-{{ platform_class }}" style="padding: 0.8rem 1rem; font-size: 13px; margin-bottom: 0.8rem;">
+                                <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                                    {% if info.get('logo') %}
+                                    <img src="{{ info.logo }}" alt="{{ platform }}" class="ott-btn-logo" loading="lazy" style="max-height: 20px;">
+                                    {% else %}
+                                    <span class="ott-btn-logo ott-btn-fallback" style="font-size: 12px;">{{ platform[:1].upper() }}</span>
+                                    {% endif %}
+                                    <div>
+                                        <span style="font-weight: 600; display: block;">Watch on {{ platform }}</span>
+                                        <!-- OTT Release Date -->
+                                        {% if info.get('last_change_date') or info.get('release_date') %}
+                                        <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-top: 0.2rem;">
+                                            <i class="fas fa-calendar-check" style="margin-right: 0.3rem;"></i>
+                                            Available since: {{ (info.get('last_change_date') or info.get('release_date')) | strftime('%b %d, %Y') if (info.get('last_change_date') or info.get('release_date')) else 'Date not available' }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if info.get('is_free') or (info.get('monetization_type') == 'free') %}
+                                <span class="ott-badge-pill" style="font-size: 9px;">FREE</span>
+                                {% elif info.get('rent') %}
+                                <span class="ott-badge-pill" style="font-size: 9px;">RENT</span>
+                                {% elif info.get('buy') %}
+                                <span class="ott-badge-pill" style="font-size: 9px;">BUY</span>
+                                {% endif %}
+                            </a>
+                            {% endif %}
+                            {% endif %}
+                            {% set _ = hidden_count.append(hidden_count.pop() + 1) %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                <div style="padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; text-align: center;">
+                    <i class="fas fa-info-circle" style="color: var(--text-secondary); font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                    <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem;">Not available on tracked platforms</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Additional Movie Information Card -->
+            <div style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+                <h3 style="margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem;">
+                    <i class="fas fa-sparkles" style="color: var(--accent-primary); font-size: 1.1rem;"></i> Key Details
+                </h3>
+                
+                <div style="display: grid; gap: 1.2rem;">
+                    <!-- Popularity -->
+                    {% if movie.popularity %}
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i class="fas fa-fire" style="margin-right: 0.4rem; color: #ff9800;"></i> Trending Score
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="flex: 1; height: 5px; background: rgba(255,152,0,0.2); border-radius: 999px; overflow: hidden;">
+                                <div style="height: 100%; width: {{ [(movie.popularity / 100) * 100, 100] | min }}%; background: linear-gradient(90deg, #ff9800, #ff6f00); border-radius: 999px;"></div>
+                            </div>
+                            <span style="font-weight: 600; color: #ff9800; font-size: 0.95rem;">{{ "%.1f"|format(movie.popularity) }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Status Badge -->
+                    {% if movie.status %}
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i class="fas fa-flag" style="margin-right: 0.4rem; color: #4caf50;"></i> Status
+                        </div>
+                        <div style="padding: 0.5rem 1rem; background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.3); border-radius: 6px; color: var(--text-primary); font-weight: 600; display: inline-block; font-size: 0.9rem; text-transform: capitalize;">
+                            🎬 {{ movie.status.replace('_', ' ').title() }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Fetch Source -->
+                    {% if movie.fetch_source %}
+                    <div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i class="fas fa-database" style="margin-right: 0.4rem; color: #2196f3;"></i> Data Source
+                        </div>
+                        <div style="padding: 0.5rem 1rem; background: rgba(33,150,243,0.15); border: 1px solid rgba(33,150,243,0.3); border-radius: 6px; color: var(--text-primary); font-weight: 600; display: inline-block; font-size: 0.9rem; text-transform: capitalize;">
+                            {{ movie.fetch_source.replace('_', ' ').title() }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Movie Details Card -->
+            <div style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+                <h3 style="margin: 0 0 1.2rem 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-info-circle" style="color: var(--accent-primary);"></i> Details
+                </h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+                    {% if movie.rating %}
+                    <div>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.4rem 0; font-weight: 600; text-transform: uppercase;">Rating</p>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="flex: 1; height: 6px; background: rgba(255,193,7,0.2); border-radius: 999px; overflow: hidden;">
+                                <div style="height: 100%; width: {{ (movie.rating / 10) * 100 }}%; background: linear-gradient(90deg, #ffc107, #ff9800); border-radius: 999px;"></div>
+                            </div>
+                            <span style="font-weight: 700; color: #ffc107;">{{ "%.1f"|format(movie.rating) }}/10</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if movie.popularity %}
+                    <div>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.4rem 0; font-weight: 600; text-transform: uppercase;">Popularity</p>
+                        <p style="font-weight: 600; margin: 0; font-size: 1.05rem;">{{ "%.0f"|format(movie.popularity) }} <span style="color: var(--text-secondary); font-size: 0.9rem;">trending</span></p>
+                    </div>
+                    {% endif %}
+
+                    {% if movie.runtime %}
+                    <div style="padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.4rem 0; font-weight: 600; text-transform: uppercase;">Duration</p>
+                        <p style="font-weight: 600; margin: 0; font-size: 1.05rem;">{{ movie.runtime }} minutes</p>
+                    </div>
+                    {% endif %}
+
+                    {% if movie.language %}
+                    <div>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.4rem 0; font-weight: 600; text-transform: uppercase;">Language</p>
+                        <p style="font-weight: 600; margin: 0; font-size: 1.05rem;">
+                            {% if movie.language == 'te' %}
+                            🇮🇳 Telugu
+                            {% elif movie.language == 'ta' %}
+                            🇮🇳 Tamil
+                            {% elif movie.language == 'hi' %}
+                            🇮🇳 Hindi
+                            {% elif movie.language == 'kn' %}
+                            🇮🇳 Kannada
+                            {% elif movie.language == 'ml' %}
+                            🇮🇳 Malayalam
+                            {% else %}
+                            {{ movie.language.upper() }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    {% if movie.certification %}
+                    <div style="padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0 0 0.4rem 0; font-weight: 600; text-transform: uppercase;">Certification</p>
+                        <p style="font-weight: 600; margin: 0; padding: 0.4rem 0.8rem; background: rgba(229,9,20,0.2); border: 1px solid var(--accent-primary); border-radius: 6px; display: inline-block; font-size: 0.95rem;">{{ movie.certification }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if movie.is_dubbed %}
+                    <div style="padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(33,150,243,0.15); border-radius: 6px; font-size: 0.9rem; font-weight: 600;">
+                            <i class="fas fa-check-circle" style="color: #2196f3;"></i> Dubbed Available
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Metadata Footer -->
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                    {% if movie.last_updated %}
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.5rem 0;">
+                        <i class="fas fa-sync-alt"></i> Updated: {{ movie.last_updated.strftime('%b %d, %Y') }}
+                    </p>
+                    {% endif %}
+                    {% if movie.created_at %}
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
+                        <i class="fas fa-calendar-plus"></i> Added: {{ movie.created_at.strftime('%b %d, %Y') }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- User Actions Card -->
+            <div style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+                <h3 style="margin: 0 0 1.2rem 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-heart" style="color: var(--accent-primary);"></i> Actions
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                    <button id="wishlist-btn" style="padding: 0.8rem; background: rgba(229,9,20,0.15); border: 1px solid rgba(229,9,20,0.3); color: var(--text-primary); border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" type="button">
+                        <i class="fas fa-heart"></i> <span id="wishlist-text">Wishlist</span>
+                    </button>
+                    <button id="share-btn" style="padding: 0.8rem; background: rgba(33,150,243,0.15); border: 1px solid rgba(33,150,243,0.3); color: var(--text-primary); border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" type="button">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Wishlist & Share Script -->
+            <script>
+            (function() {
+                const movieTitle = '{{ movie.title }}';
+                const movieId = {{ movie.tmdb_id }};
+                const movieUrl = window.location.href;
+                
+                // Haptic feedback helper
+                function hapticFeedback(duration = 10) {
+                    if (window.navigator.vibrate) {
+                        window.navigator.vibrate(duration);
+                    }
+                }
+                
+                // Wishlist functionality
+                const wishlistBtn = document.getElementById('wishlist-btn');
+                const wishlistText = document.getElementById('wishlist-text');
+                let isInWishlist = localStorage.getItem(`wishlist_${movieId}`) === 'true';
+                
+                // Update button state on load
+                if (isInWishlist) {
+                    wishlistBtn.style.background = 'rgba(229,9,20,0.35)';
+                    wishlistBtn.style.borderColor = 'rgba(229,9,20,0.6)';
+                    wishlistBtn.style.color = '#ff1744';
+                    wishlistText.textContent = 'Added to Wishlist';
+                    const icon = wishlistBtn.querySelector('i');
+                    if (icon) icon.style.color = '#ff1744';
+                }
+                
+                wishlistBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    hapticFeedback(15);
+                    
+                    if (isInWishlist) {
+                        // Remove from wishlist
+                        localStorage.removeItem(`wishlist_${movieId}`);
+                        isInWishlist = false;
+                        wishlistBtn.style.background = 'rgba(229,9,20,0.15)';
+                        wishlistBtn.style.borderColor = 'rgba(229,9,20,0.3)';
+                        wishlistBtn.style.color = 'var(--text-primary)';
+                        wishlistText.textContent = 'Wishlist';
+                        const icon = wishlistBtn.querySelector('i');
+                        if (icon) icon.style.color = 'inherit';
+                    } else {
+                        // Add to wishlist
+                        localStorage.setItem(`wishlist_${movieId}`, 'true');
+                        isInWishlist = true;
+                        wishlistBtn.style.background = 'rgba(229,9,20,0.35)';
+                        wishlistBtn.style.borderColor = 'rgba(229,9,20,0.6)';
+                        wishlistBtn.style.color = '#ff1744';
+                        wishlistText.textContent = 'Added to Wishlist';
+                        const icon = wishlistBtn.querySelector('i');
+                        if (icon) icon.style.color = '#ff1744';
+                    }
+                });
+                
+                // Share functionality
+                const shareBtn = document.getElementById('share-btn');
+                shareBtn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    hapticFeedback(15);
+                    
+                    const shareData = {
+                        title: movieTitle,
+                        text: `Check out "${movieTitle}" on OTT RADAR - Find where it streams!`,
+                        url: movieUrl
+                    };
+                    
+                    // Use native Share API if available (mobile)
+                    if (navigator.share) {
+                        try {
+                            await navigator.share(shareData);
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                console.warn('Share failed:', err);
+                            }
+                        }
+                    } else {
+                        // Fallback: Copy to clipboard
+                        const shareText = `${shareData.title}\n${shareData.text}\n${shareData.url}`;
+                        navigator.clipboard.writeText(shareText).then(() => {
+                            hapticFeedback(20);
+                            const originalText = shareBtn.querySelector('span').textContent;
+                            shareBtn.querySelector('span').textContent = 'Copied!';
+                            setTimeout(() => {
+                                shareBtn.querySelector('span').textContent = originalText;
+                            }, 2000);
+                        }).catch(err => console.warn('Copy to clipboard failed:', err));
+                    }
+                });
+            })();
+            </script>
+
+            <!-- Back Button -->
+            <a href="javascript:history.back()" style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.08); color: var(--text-primary); text-decoration: none; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.15); font-weight: 600; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="trailer-modal" id="trailerModal" aria-hidden="true">
+    <div class="trailer-modal__backdrop" data-trailer-close></div>
+    <div class="trailer-modal__dialog" role="dialog" aria-modal="true">
+        <button class="trailer-modal__close" type="button" data-trailer-close aria-label="Close trailer">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="trailer-modal__frame">
+            <iframe id="trailerFrame" src="" title="Trailer" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var modal = document.getElementById('trailerModal');
+        var frame = document.getElementById('trailerFrame');
+        var openers = document.querySelectorAll('[data-trailer]');
+        var closers = document.querySelectorAll('[data-trailer-close]');
+
+        function openTrailer(url) {
+            if (!url) {
+                return;
+            }
+            frame.src = url;
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeTrailer() {
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+            frame.src = '';
+        }
+
+        openers.forEach(function (button) {
+            button.addEventListener('click', function () {
+                openTrailer(button.getAttribute('data-trailer'));
+            });
+        });
+
+        closers.forEach(function (button) {
+            button.addEventListener('click', closeTrailer);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+                closeTrailer();
+            }
+        });
+    })();
+</script>
+
+{% endblock %}

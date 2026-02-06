@@ -1,0 +1,422 @@
+{% extends "base.html" %}
+
+{% macro render_poster_card(movie, show_rating=True) %}
+<a href="{{ url_for('movie_detail', movie_identifier=movie.title|movie_slug) }}" class="poster-card">
+    <div class="poster-wrapper">
+        {% if movie.poster and movie.poster.strip() %}
+        <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy" onerror="this.closest('.poster-wrapper').classList.add('image-error'); this.style.display='none';">
+        {% endif %}
+        {% if not movie.poster or not movie.poster.strip() %}
+        <div class="poster-fallback"><i class="fas fa-film"></i></div>
+        {% endif %}
+        
+        <!-- Platform Badges (Max 2) -->
+        {% if movie.ott_platforms and movie.ott_platforms != '{}' %}
+        {% set ott_str = movie.ott_platforms|lower %}
+        <div class="platform-badges">
+            {% set badge_count = [0] %}
+            {% if 'netflix' in ott_str and badge_count[0] < 2 %}
+            <div class="platform-badge netflix" title="Available on Netflix">N</div>
+            {% set _ = badge_count.append(badge_count.pop() + 1) %}
+            {% endif %}
+            {% if ('amazon' in ott_str or 'prime' in ott_str) and badge_count[0] < 2 %}
+            <div class="platform-badge prime" title="Available on Prime Video">P</div>
+            {% set _ = badge_count.append(badge_count.pop() + 1) %}
+            {% endif %}
+            {% if 'hotstar' in ott_str and badge_count[0] < 2 %}
+            <div class="platform-badge hotstar" title="Available on Hotstar">H</div>
+            {% set _ = badge_count.append(badge_count.pop() + 1) %}
+            {% endif %}
+            {% if 'jiocinema' in ott_str and badge_count[0] < 2 %}
+            <div class="platform-badge jiocinema" title="Available on JioCinema">J</div>
+            {% set _ = badge_count.append(badge_count.pop() + 1) %}
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% if show_rating and movie.rating %}
+        <div class="rating-badge">⭐ {{ "%.1f"|format(movie.rating) }}</div>
+        {% endif %}
+    </div>
+    <h3 class="poster-title">{{ movie.title }}</h3>
+</a>
+{% endmacro %}
+
+{% macro render_mobile_skeleton(count=6) %}
+{% for _ in range(count) %}
+<div class="mobile-skeleton-card">
+    <div class="mobile-skeleton-poster loading-skeleton"></div>
+    <div class="mobile-skeleton-title loading-skeleton"></div>
+</div>
+{% endfor %}
+{% endmacro %}
+
+{% block title %}OTT RADAR - Track Every Movie. Find Where It Streams.{% endblock %}
+
+{% block content %}
+
+{% if query %}
+<!-- ========== SEARCH RESULTS VIEW ========== -->
+<section class="hero-search">
+    <div class="container" style="padding-top: 2rem;">
+        <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Search Results</h1>
+        <p style="color: var(--text-secondary);">Found <strong>{{ total_results }}</strong> movie{{ 's' if total_results != 1 else '' }} for "{{ query }}"</p>
+    </div>
+</section>
+
+<div class="container" style="padding: 2rem 0;">
+    {% if search_results %}
+    <div class="movie-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px;">
+        {% for movie in search_results %}
+        <a href="{{ url_for('movie_detail', movie_identifier=movie.title|movie_slug) }}" class="poster-card">
+            <div class="poster-wrapper">
+                {% if movie.poster %}
+                <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy" style="aspect-ratio: 2/3; object-fit: cover;">
+                {% else %}
+                <div class="poster-fallback"><i class="fas fa-film"></i></div>
+                {% endif %}
+                {% if movie.rating %}
+                <div class="rating-badge">⭐ {{ "%.1f"|format(movie.rating) }}</div>
+                {% endif %}
+            </div>
+            <h3 class="poster-title" style="font-size: 12px;">{{ movie.title }}</h3>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" style="text-align: center; padding: 4rem 2rem;">
+        <i class="fas fa-search" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+        <h2>No movies found</h2>
+        <p style="color: var(--text-secondary);">Try different keywords or browse our collection</p>
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+            <a href="{{ url_for('filter_movies') }}" class="btn-primary">Browse All</a>
+            <a href="{{ url_for('trending') }}" class="btn-secondary">Trending</a>
+        </div>
+    </div>
+    {% endif %}
+    <!-- Infinite Scroll Sentinel for Search -->
+    <div id="infinite-scroll-sentinel"></div>
+</div>
+
+{% else %}
+<!-- ========== HOME VIEW ========== -->
+
+<div class="mobile-only">
+    <!-- SECTION 1: Continue Watching (Personalization) -->
+    {% if continue_watching %}
+    <section class="row-section mobile-row">
+        <div class="row-header">
+            <h2 class="row-title">Continue Watching</h2>
+            <a href="{{ url_for('watchlist') }}" class="row-see-all">See All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="horizontal-scroll mobile-scroll-row">
+            {% for movie in continue_watching[:10] %}
+                {{ render_poster_card(movie, show_rating=False) }}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- SECTION 2: Popular on Radar (Trending) -->
+    <section class="row-section mobile-row">
+        <div class="row-header">
+            <h2 class="row-title">Popular on Radar</h2>
+            <a href="{{ url_for('trending') }}" class="row-see-all">See All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="horizontal-scroll mobile-scroll-row">
+            {% if popular_on_radar %}
+                {% for movie in popular_on_radar[:10] %}
+                    {{ render_poster_card(movie, show_rating=False) }}
+                {% endfor %}
+            {% else %}
+                {{ render_mobile_skeleton(6) }}
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- SECTION 3: New on OTT (Freshness - Consolidates Recently Added + Just Added) -->
+    <section class="row-section mobile-row">
+        <div class="row-header">
+            <h2 class="row-title">New on OTT</h2>
+            <a href="{{ url_for('new_on_ott') }}" class="row-see-all">See All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="horizontal-scroll mobile-scroll-row">
+            {% if new_on_ott %}
+                {% for movie in new_on_ott[:10] %}
+                    {{ render_poster_card(movie, show_rating=False) }}
+                {% endfor %}
+            {% else %}
+                {{ render_mobile_skeleton(6) }}
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- SECTION 4: Hidden Gems (Discovery) - Special Styling -->
+    {% if hidden_gems %}
+    <section class="row-section mobile-row hidden-gems-section">
+        <div class="row-header">
+            <h2 class="row-title">💎 Hidden Gems</h2>
+            <a href="{{ url_for('hidden_gems') }}" class="row-see-all">See All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="horizontal-scroll mobile-scroll-row">
+            {% for movie in hidden_gems[:10] %}
+                {{ render_poster_card(movie, show_rating=True) }}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- SECTION 5: Upcoming Hits (Anticipation) -->
+    {% if upcoming_hits %}
+    <section class="row-section mobile-row">
+        <div class="row-header">
+            <h2 class="row-title">Upcoming Hits</h2>
+            <a href="{{ url_for('filter_movies') }}" class="row-see-all">See All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="horizontal-scroll mobile-scroll-row">
+            {% for movie in upcoming_hits[:10] %}
+                {{ render_poster_card(movie, show_rating=False) }}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- MOBILE FOOTER -->
+    <footer class="mobile-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3 style="color: var(--accent-primary); font-weight: 800; font-size: 1.2rem; margin-bottom: 0.3rem;">OTT RADAR</h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">Track every movie. Find where it streams.</p>
+            </div>
+            <div class="footer-links-mobile">
+                <a href="{{ url_for('trending') }}">Trending</a>
+                <a href="{{ url_for('free_movies') }}">Free</a>
+                <a href="{{ url_for('hidden_gems') }}">Gems</a>
+                <a href="{{ url_for('watchlist') }}">Watchlist</a>
+            </div>
+            <div class="footer-bottom-mobile">
+                <p>&copy; 2026 OTT Radar</p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<div class="desktop-only">
+<!-- HERO BANNER (Desktop Only) -->
+<section class="hero-banner desktop-only">
+    {% if featured %}
+    <div class="hero-bg" style="background: linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, transparent 100%), url('{{ featured.backdrop or featured.poster }}') center/cover;">
+        <div class="container hero-content-wrapper">
+            <div class="hero-text" style="max-width: 600px;">
+                <h1 class="hero-title">Track Every Movie.<br>Find Where It Streams.</h1>
+                <p class="hero-subtitle">Discover movies across Netflix, Prime Video, Hotstar & more. All in one place.</p>
+                
+                <!-- Search Bar -->
+                <form action="/" method="get" class="hero-search-form">
+                    <input type="text" name="q" placeholder="Search movies..." autocomplete="off">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+                
+                <!-- CTA Buttons -->
+                <div class="hero-buttons">
+                    <a href="{{ url_for('filter_movies') }}" class="btn-hero-primary">
+                        <i class="fas fa-play"></i> Browse Movies
+                    </a>
+                    <a href="{{ url_for('free_movies') }}" class="btn-hero-secondary">
+                        <i class="fas fa-star"></i> Free Movies
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="hero-bg" style="background: linear-gradient(135deg, #141414 0%, #1a1a1a 100%);">
+        <div class="container hero-content-wrapper">
+            <div class="hero-text" style="max-width: 700px; text-align: center; margin: 0 auto;">
+                <h1 class="hero-title">Track Every Movie.<br>Find Where It Streams.</h1>
+                <p class="hero-subtitle">Discover movies across Netflix, Prime Video, Hotstar & more. All in one place.</p>
+                
+                <form action="/" method="get" class="hero-search-form">
+                    <input type="text" name="q" placeholder="Search movies..." autocomplete="off">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </form>
+                
+                <div class="hero-buttons">
+                    <a href="{{ url_for('filter_movies') }}" class="btn-hero-primary">
+                        <i class="fas fa-play"></i> Browse Movies
+                    </a>
+                    <a href="{{ url_for('free_movies') }}" class="btn-hero-secondary">
+                        <i class="fas fa-star"></i> Free Movies
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</section>
+
+<!-- TODAY ON OTT -->
+{% if today_on_ott %}
+<section class="row-section" style="padding-top: 2rem;">
+    <div class="container">
+        <div class="row-header">
+            <h2 class="row-title">Today on OTT</h2>
+            <a href="{{ url_for('new_on_ott') }}" class="row-see-all">See All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="carousel-container">
+            <button class="carousel-arrow left" onclick="this.parentElement.querySelector('.horizontal-scroll').scrollBy({left: -400, behavior: 'smooth'})">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="horizontal-scroll">
+            {% for movie in today_on_ott %}
+            {{ render_poster_card(movie, show_rating=False) }}
+            {% endfor %}
+        </div>
+        <button class="carousel-arrow right" onclick="this.parentElement.querySelector('.horizontal-scroll').scrollBy({left: 400, behavior: 'smooth'})">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- 3. TRENDING NOW -->
+{% if trending %}
+<section class="row-section">
+    <div class="container">
+        <div class="row-header">
+            <h2 class="row-title">Trending Now</h2>
+            <a href="{{ url_for('trending') }}" class="row-see-all">See All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="carousel-container">
+            <button class="carousel-arrow left" onclick="this.parentElement.querySelector('.horizontal-scroll').scrollBy({left: -400, behavior: 'smooth'})">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        <div class="horizontal-scroll">
+            {% for movie in trending %}
+            {{ render_poster_card(movie, show_rating=False) }}
+            {% endfor %}
+        </div>
+        <button class="carousel-arrow right" onclick="this.parentElement.querySelector('.horizontal-scroll').scrollBy({left: 400, behavior: 'smooth'})">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- 4. RECENTLY ADDED -->
+{% if new_releases %}
+<section class="row-section">
+    <div class="container">
+        <div class="row-header">
+            <h2 class="row-title">Recently Added</h2>
+            <a href="{{ url_for('new_on_ott') }}" class="row-see-all">See All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="carousel-container">
+            <button class="carousel-arrow left" onclick="this.parentElement.querySelector('.horizontal-scroll').scrollBy({left: -400, behavior: 'smooth'})">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        <div class="horizontal-scroll">
+            {% for movie in new_releases %}
+            {{ render_poster_card(movie, show_rating=False) }}
+            {% endfor %}
+        </div>
+        <button class="carousel-arrow right" onclick="this.parentElement.querySelector('.horizontal-scroll').scrollBy({left: 400, behavior: 'smooth'})">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- 5. UPCOMING SOON -->
+{% if upcoming %}
+<section class="row-section">
+    <div class="container">
+        <div class="row-header">
+            <h2 class="row-title">Upcoming Soon</h2>
+        </div>
+        <div class="carousel-container">
+            <button class="carousel-arrow left" onclick="this.parentElement.querySelector('.horizontal-scroll').scrollBy({left: -400, behavior: 'smooth'})">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        <div class="horizontal-scroll">
+            {% for movie in upcoming %}
+            {{ render_poster_card(movie, show_rating=False) }}
+            {% endfor %}
+        </div>
+        <button class="carousel-arrow right" onclick="this.parentElement.querySelector('.horizontal-scroll').scrollBy({left: 400, behavior: 'smooth'})">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section - Request & Suggest -->
+<section class="cta-section" style="padding: 4rem 0; background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(229, 9, 20, 0.05));">
+    <div class="container" style="text-align: center;">
+        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Can't Find What You're Looking For?</h2>
+        <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+            Request a movie or suggest a feature to help us improve OTT Radar
+        </p>
+        <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('suggest') }}" class="cta-btn" style="display: inline-flex; align-items: center; gap: 0.75rem; padding: 1.25rem 2.5rem; background: var(--accent-primary); color: white; font-weight: 700; font-size: 1.1rem; border-radius: 8px; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);">
+                <i class="fas fa-film"></i> Request a Movie
+            </a>
+            <a href="{{ url_for('suggest') }}" class="cta-btn" style="display: inline-flex; align-items: center; gap: 0.75rem; padding: 1.25rem 2.5rem; background: rgba(255, 255, 255, 0.1); color: white; font-weight: 700; font-size: 1.1rem; border-radius: 8px; text-decoration: none; transition: all 0.3s; border: 1px solid rgba(255, 255, 255, 0.2);">
+                <i class="fas fa-lightbulb"></i> Suggest a Feature
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Infinite Scroll Sentinel -->
+<div id="infinite-scroll-sentinel"></div>
+
+<!-- 7. FOOTER -->
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3 style="color: var(--accent-primary); font-weight: 800; font-size: 1.5rem; margin-bottom: 0.5rem;">OTT RADAR</h3>
+                <p style="color: var(--text-secondary); margin: 0;">Track every movie. Find where it streams.</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h4>Discover</h4>
+                    <ul>
+                        <li><a href="{{ url_for('trending') }}">Trending</a></li>
+                        <li><a href="{{ url_for('free_movies') }}">Free Movies</a></li>
+                        <li><a href="{{ url_for('new_on_ott') }}">New on OTT</a></li>
+                        <li><a href="{{ url_for('hidden_gems') }}">Hidden Gems</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Tools</h4>
+                    <ul>
+                        <li><a href="{{ url_for('filter_movies') }}">Smart Filter</a></li>
+                        <li><a href="{{ url_for('ott_dashboard') }}">OTT Dashboard</a></li>
+                        <li><a href="{{ url_for('watchlist') }}">Watchlist</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>About</h4>
+                    <ul>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('suggest') }}">Request Movie</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 OTT Radar. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+</div>
+
+{% endif %}
+{% endblock %}

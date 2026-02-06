@@ -1,0 +1,396 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Edit Movie -Radar Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="admin-section">
+        <h2><i class="fas fa-search"></i> Search Movie</h2>
+        <form method="POST" class="search-movie-form">
+            <input type="text" name="search_query" placeholder="Enter TMDB ID or movie name..." required value="{{ search_query }}">
+            <button type="submit"><i class="fas fa-search"></i> Search</button>
+        </form>
+        <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
+            <i class="fas fa-info-circle"></i> Search by TMDB ID for exact match, or type movie name to find all matching results (50%+ similarity)
+        </p>
+    </div>
+
+    <!-- Search Results Grid -->
+    {% if movies %}
+    <div class="admin-section" style="margin-top: 2rem;">
+        <h2 style="margin-bottom: 1.5rem;"><i class="fas fa-film"></i> Found {{ movies|length }} Movie{{ 's' if movies|length != 1 else '' }} - Click Card to Edit</h2>
+        
+        <div class="movie-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem;">
+            {% for movie in movies %}
+            <div class="movie-card-select" data-tmdb-id="{{ movie.tmdb_id }}" onclick="selectMovieForEdit(this)" style="cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent; position: relative;">
+                <div class="poster" style="position: relative;">
+                    {% if movie.poster %}
+                        <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy" style="width: 100%; height: auto; border-radius: var(--radius-md); transition: transform 0.3s ease;">
+                    {% else %}
+                        <div style="width: 100%; aspect-ratio: 2/3; background: var(--bg-card); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-film" style="font-size: 2rem; color: var(--text-secondary);"></i>
+                        </div>
+                    {% endif %}
+                    <div style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.8); color: white; padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: bold;">
+                        ID: {{ movie.tmdb_id }}
+                    </div>
+                </div>
+                <div class="card-info" style="padding: 0.8rem 0;">
+                    <h3 style="font-size: 0.95rem; margin: 0 0 0.3rem 0; line-height: 1.3; color: var(--text-primary);">{{ movie.title }}</h3>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem;">
+                        <span>{{ movie.release_date[:4] if movie.release_date else 'N/A' }}</span>
+                        {% if movie.rating %}
+                        <span>⭐ {{ "%.1f"|format(movie.rating) }}</span>
+                        {% endif %}
+                    </div>
+                    <span style="display: inline-block; background: var(--bg-card); padding: 0.3rem 0.6rem; border-radius: 999px; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.3rem;">
+                        <i class="fas fa-edit"></i> Click to edit
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Edit Form Section -->
+    <div id="edit-section" class="admin-section" style="margin-top: 3rem; display: none;">
+        <h2 id="edit-title"><i class="fas fa-film"></i> Edit Movie</h2>
+        
+        <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem; margin-top: 1.5rem;">
+            <!-- Movie Poster & Backdrop -->
+            <div>
+                <img id="poster-display" src="" alt="Poster" style="width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 1rem;">
+                
+                <!-- Backdrop Preview -->
+                <div style="margin-top: 1rem; display: none;" id="backdrop-preview">
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Backdrop:</p>
+                    <img id="backdrop-display" src="" alt="Backdrop" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <form id="edit-form" method="POST" class="edit-movie-form">
+                <div class="form-grid">
+                    <!-- Basic Info -->
+                    <div class="form-group full-width">
+                        <label><i class="fas fa-heading"></i> Title</label>
+                        <input type="text" name="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-hashtag"></i> TMDB ID</label>
+                        <input type="text" id="tmdb-id" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar"></i> Release Date</label>
+                        <input type="text" name="release_date" placeholder="YYYY-MM-DD">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-star"></i> Rating</label>
+                        <input type="number" name="rating" step="0.1" min="0" max="10" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-fire"></i> Popularity</label>
+                        <input type="number" name="popularity" step="0.1" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Runtime (minutes)</label>
+                        <input type="number" name="runtime" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-language"></i> Language</label>
+                        <input type="text" name="language" placeholder="te, en, hi">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-certificate"></i> Certification</label>
+                        <input type="text" name="certification" placeholder="U, U/A, A">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-theater-masks"></i> Genres</label>
+                        <input type="text" name="genres" placeholder="Action, Drama, Comedy">
+                    </div>
+
+                    <!-- URLs -->
+                    <div class="form-group full-width">
+                        <label><i class="fas fa-image"></i> Poster URL</label>
+                        <input type="text" name="poster" placeholder="https://image.tmdb.org/..." onchange="updatePosterPreview()">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label><i class="fas fa-images"></i> Backdrop URL</label>
+                        <input type="text" name="backdrop" placeholder="https://image.tmdb.org/..." onchange="updateBackdropPreview()">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label><i class="fas fa-video"></i> Trailer URL</label>
+                        <input type="text" name="trailer" placeholder="https://youtube.com/...">
+                    </div>
+
+                    <!-- Overview/Description -->
+                    <div class="form-group full-width">
+                        <label><i class="fas fa-align-left"></i> Overview / Description</label>
+                        <textarea name="overview" rows="4" placeholder="Movie description..."></textarea>
+                    </div>
+
+                    <!-- Cast -->
+                    <div class="form-group full-width">
+                        <label><i class="fas fa-users"></i> Cast (comma-separated)</label>
+                        <textarea name="cast" rows="2" placeholder="Actor 1, Actor 2, Actor 3..."></textarea>
+                    </div>
+
+                    <!-- OTT Platforms & Links -->
+                    <div class="form-group full-width">
+                        <label><i class="fas fa-tv"></i> OTT Platforms & Watch Links (JSON)</label>
+                        <textarea name="ott_platforms" rows="6" required placeholder='{"Netflix": {"url": "https://...", "type": "subscription"}, "Amazon": {"url": "https://...", "type": "rental"}}'></textarea>
+                        <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                            <strong>Format:</strong> {"Platform": {"url": "https://...", "type": "subscription/rental/free"}}<br>
+                            <strong>Example:</strong> {"Netflix": {"url": "https://netflix.com/...", "type": "subscription"}}
+                        </small>
+                    </div>
+
+                    <!-- Checkboxes -->
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="is_active">
+                            <i class="fas fa-eye"></i> Active (Show on site)
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="is_dubbed">
+                            <i class="fas fa-microphone"></i> Dubbed Movie
+                        </label>
+                    </div>
+
+                    <!-- Metadata Info (Read-only) -->
+                    <div class="form-group full-width" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                        <p id="metadata-info" style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;"></p>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <button type="button" onclick="closeEditForm()" class="btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Sample movie data passed from backend
+const moviesData = {
+    {% for movie in movies %}
+    {{ movie.tmdb_id }}: {
+        title: "{{ movie.title|safe|replace('"', '\\"') }}",
+        release_date: "{{ movie.release_date }}",
+        rating: {{ movie.rating or 0 }},
+        popularity: {{ movie.popularity or 0 }},
+        runtime: {{ movie.runtime or 0 }},
+        language: "{{ movie.language }}",
+        certification: "{{ movie.certification }}",
+        genres: "{{ movie.genres }}",
+        poster: "{{ movie.poster }}",
+        backdrop: "{{ movie.backdrop }}",
+        trailer: "{{ movie.trailer }}",
+        overview: "{{ movie.overview|safe|replace('"', '\\"')|replace('\n', '\\n') }}",
+        cast: "{{ movie.cast|safe|replace('"', '\\"') }}",
+        ott_platforms: '{{ movie.ott_platforms|safe|replace("'", "\\'") }}',
+        is_active: {{ 'true' if movie.is_active else 'false' }},
+        is_dubbed: {{ 'true' if movie.is_dubbed else 'false' }},
+        created_at: "{{ movie.created_at.strftime('%Y-%m-%d') if movie.created_at else '' }}",
+        last_updated: "{{ movie.last_updated.strftime('%Y-%m-%d %H:%M') if movie.last_updated else '' }}",
+        fetch_source: "{{ movie.fetch_source }}"
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+function selectMovieForEdit(cardElement) {
+    const tmdbId = cardElement.dataset.tmdbId;
+    const movieData = moviesData[tmdbId];
+    
+    if (!movieData) return;
+    
+    // Populate form with movie data
+    const form = document.getElementById('edit-form');
+    form.title.value = movieData.title;
+    form.release_date.value = movieData.release_date;
+    form.rating.value = movieData.rating;
+    form.popularity.value = movieData.popularity;
+    form.runtime.value = movieData.runtime;
+    form.language.value = movieData.language;
+    form.certification.value = movieData.certification;
+    form.genres.value = movieData.genres;
+    form.poster.value = movieData.poster;
+    form.backdrop.value = movieData.backdrop;
+    form.trailer.value = movieData.trailer;
+    form.overview.value = movieData.overview;
+    form.cast.value = movieData.cast;
+    form.ott_platforms.value = movieData.ott_platforms;
+    form.is_active.checked = movieData.is_active;
+    form.is_dubbed.checked = movieData.is_dubbed;
+    
+    // Update poster and backdrop previews
+    const posterDisplay = document.getElementById('poster-display');
+    posterDisplay.src = movieData.poster;
+    
+    if (movieData.backdrop) {
+        document.getElementById('backdrop-preview').style.display = 'block';
+        document.getElementById('backdrop-display').src = movieData.backdrop;
+    } else {
+        document.getElementById('backdrop-preview').style.display = 'none';
+    }
+    
+    // Update metadata
+    const metadata = `<strong>Database ID:</strong> ${tmdbId} &nbsp;|&nbsp; <strong>Source:</strong> ${movieData.fetch_source} &nbsp;|&nbsp; <strong>Created:</strong> ${movieData.created_at} &nbsp;|&nbsp; <strong>Last Updated:</strong> ${movieData.last_updated}`;
+    document.getElementById('metadata-info').innerHTML = metadata;
+    
+    // Update form action
+    form.action = `/admin/movie/edit/${tmdbId}`;
+    
+    // Update title
+    document.getElementById('edit-title').innerHTML = `<i class="fas fa-film"></i> Edit: ${movieData.title}`;
+    
+    // Set TMDB ID field
+    document.getElementById('tmdb-id').value = tmdbId;
+    
+    // Show edit form
+    document.getElementById('edit-section').style.display = 'block';
+    
+    // Scroll to form with smooth behavior
+    setTimeout(() => {
+        document.getElementById('edit-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+}
+
+function closeEditForm() {
+    document.getElementById('edit-section').style.display = 'none';
+    document.querySelector('input[name="search_query"]').focus();
+}
+
+function updatePosterPreview() {
+    const url = document.querySelector('input[name="poster"]').value;
+    const posterDisplay = document.getElementById('poster-display');
+    if (url) {
+        posterDisplay.src = url;
+    }
+}
+
+function updateBackdropPreview() {
+    const url = document.querySelector('input[name="backdrop"]').value;
+    const backdropDisplay = document.getElementById('backdrop-display');
+    if (url) {
+        document.getElementById('backdrop-preview').style.display = 'block';
+        backdropDisplay.src = url;
+    }
+}
+</script>
+
+<style>
+.movie-card-select:hover {
+    transform: translateY(-8px);
+    border-color: var(--accent-color, #2196F3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.movie-card-select:hover img {
+    transform: scale(1.05);
+}
+
+.edit-movie-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-color, #2196F3);
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--accent-color, #2196F3);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--accent-color-dark, #1976D2);
+}
+
+.btn-secondary {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--border);
+}
+</style>
+{% endblock %}
