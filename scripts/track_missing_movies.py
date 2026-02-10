@@ -49,7 +49,7 @@ def tmdb_get(path, params=None, retries=2):
     return None
 
 
-def find_missing_from_tmdb_discover(years=None, limit=500):
+def find_missing_from_tmdb_discover(years=None, limit=500, language=None):
     """
     Find movies in TMDB that aren't in our database
     
@@ -75,7 +75,6 @@ def find_missing_from_tmdb_discover(years=None, limit=500):
     for year in years:
         page = 1
         year_found = 0
-        
         while found_count < limit and year_found < 100:
             params = {
                 'language': 'en-US',
@@ -83,35 +82,48 @@ def find_missing_from_tmdb_discover(years=None, limit=500):
                 'sort_by': 'popularity.desc',
                 'page': page
             }
-            
+            if language:
+                params['with_original_language'] = language
             results = tmdb_get('/discover/movie', params=params)
             if not results or not results.get('results'):
                 break
-            
             for movie in results['results']:
                 tmdb_id = movie.get('id')
-                
                 # Skip if already in our DB
                 if tmdb_id in existing_tmdb_ids:
                     continue
-                
-                found_count += 1
-                year_found += 1
-                
-                missing_candidates[str(tmdb_id)] = {
-                    'title': movie.get('title', 'Unknown'),
-                    'year': year,
-                    'popularity': movie.get('popularity', 0),
-                    'release_date': movie.get('release_date'),
-                    'tmdb_id': tmdb_id
-                }
-                
-                if found_count >= limit:
-                    break
-            
+                # If language is set to 'te', check spoken_languages for Telugu
+                include_movie = False
+                if language == 'te':
+                    # Fetch full movie details to check spoken_languages
+                    details = tmdb_get(f'/movie/{tmdb_id}', params={'language': 'en-US'})
+                    if details and 'spoken_languages' in details:
+                        for sl in details['spoken_languages']:
+                            if sl.get('iso_639_1') == 'te':
+                                include_movie = True
+                                break
+                # Otherwise, include if original_language matches
+                if language and language != 'te':
+                    if movie.get('original_language', '') == language:
+                        include_movie = True
+                if not language:
+                    include_movie = True
+                if include_movie:
+                    found_count += 1
+                    year_found += 1
+                    missing_candidates[str(tmdb_id)] = {
+                        'title': movie.get('title', 'Unknown'),
+                        'year': year,
+                        'popularity': movie.get('popularity', 0),
+                        'release_date': movie.get('release_date'),
+                        'tmdb_id': tmdb_id,
+                        'original_language': movie.get('original_language', ''),
+                        'spoken_languages': details.get('spoken_languages', []) if language == 'te' and details else []
+                    }
+                    if found_count >= limit:
+                        break
             page += 1
             print(f"  ✓ Year {year}: found {year_found} missing movies")
-        
         if found_count >= limit:
             break
     
@@ -234,6 +246,8 @@ def main():
     parser.add_argument('--enrich-missing', action='store_true', help='Enrich missing movies (preview)')
     parser.add_argument('--skip-ott', action='store_true', default=True, help='Skip OTT enrichment (default: True)')
     parser.add_argument('--limit', type=int, help='Limit enrichment to N movies')
+    parser.add_argument('--year', type=int, help='Specify a single year to find missing movies')
+    parser.add_argument('--language', type=str, help='Specify original language code (e.g., en, hi, ta)')
     
     args = parser.parse_args()
     
@@ -242,8 +256,12 @@ def main():
         return
     
     if args.find and args.save:
-        print(f"\n🔍 Finding {args.find} missing movies...")
-        missing = find_missing_from_tmdb_discover(limit=args.find)
+        years = None
+        if args.year:
+            years = [args.year]
+        language = args.language if args.language else None
+        print(f"\n🔍 Finding {args.find} missing movies..." + (f" for year {args.year}" if args.year else "") + (f" in language {args.language}" if args.language else ""))
+        missing = find_missing_from_tmdb_discover(years=years, limit=args.find, language=language)
         count = save_missing_movies(missing)
         print(f"✅ Ready to enrich! Use: python enrich_metadata_trailers.py --from-json")
     

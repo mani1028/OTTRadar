@@ -17,11 +17,11 @@ venv.bak/
 .env.local
 
 # Database Files
-instance/
-*.db
-*.db-journal
-*.sqlite
-*.sqlite3
+#instance/
+#*.db
+#*.db-journal
+#*.sqlite
+#*.sqlite3
 # ott_tracker.db
 
 # Backups & Exports
