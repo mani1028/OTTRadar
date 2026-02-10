@@ -1,0 +1,147 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Inventory - OTT RADAR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="admin-section">
+        <div class="section-head">
+            <div>
+                <h2><i class="fas fa-database"></i> Inventory</h2>
+                <p class="section-desc">Filter movies with missing data and open them for edits.</p>
+            </div>
+            <form method="POST" action="{{ url_for('admin_movie_search') }}" class="inventory-search">
+                <input type="text" name="search_query" placeholder="Search TMDB ID or title" required>
+                <button type="submit"><i class="fas fa-search"></i> Search</button>
+            </form>
+        </div>
+
+        <div class="filter-pills">
+            <a class="filter-pill {% if filter_type == 'all' %}active{% endif %}" href="/admin/inventory?filter=all">All</a>
+            <a class="filter-pill {% if filter_type == 'missing_trailer' %}active{% endif %}" href="/admin/inventory?filter=missing_trailer">Missing Trailer</a>
+            <a class="filter-pill {% if filter_type == 'missing_ott' %}active{% endif %}" href="/admin/inventory?filter=missing_ott">Missing OTT</a>
+            <a class="filter-pill {% if filter_type == 'missing_poster' %}active{% endif %}" href="/admin/inventory?filter=missing_poster">Missing Poster</a>
+            <a class="filter-pill {% if filter_type == 'missing_overview' %}active{% endif %}" href="/admin/inventory?filter=missing_overview">Missing Overview</a>
+            <a class="filter-pill {% if filter_type == 'missing_cast' %}active{% endif %}" href="/admin/inventory?filter=missing_cast">Missing Cast</a>
+            <a class="filter-pill {% if filter_type == 'missing_genres' %}active{% endif %}" href="/admin/inventory?filter=missing_genres">Missing Genres</a>
+            <a class="filter-pill {% if filter_type == 'missing_runtime' %}active{% endif %}" href="/admin/inventory?filter=missing_runtime">Missing Runtime</a>
+            <a class="filter-pill {% if filter_type == 'missing_rating' %}active{% endif %}" href="/admin/inventory?filter=missing_rating">Missing Rating</a>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        {% if movies %}
+        <div class="inventory-grid">
+            {% for movie in movies %}
+            <div class="inventory-card">
+                <div class="inventory-poster">
+                    {% if movie.poster %}
+                        <img src="{{ movie.poster }}" alt="{{ movie.title }}">
+                    {% else %}
+                        <div class="poster-placeholder"><i class="fas fa-image"></i></div>
+                    {% endif %}
+                </div>
+                <div class="inventory-info">
+                    <h3>{{ movie.title }}</h3>
+                    <div class="inventory-meta">
+                        <span>TMDB: {{ movie.tmdb_id }}</span>
+                        <span>{{ language_map.get(movie.language, movie.language or 'n/a') }}</span>
+                    </div>
+                    <div class="missing-badges">
+                        {% if not movie.poster %}<span class="badge-missing">Poster</span>{% endif %}
+                        {% if not movie.overview %}<span class="badge-missing">Overview</span>{% endif %}
+                        {% if not movie.cast %}<span class="badge-missing">Cast</span>{% endif %}
+                        {% if not movie.genres %}<span class="badge-missing">Genres</span>{% endif %}
+                        {% if not movie.youtube_trailer_id %}<span class="badge-missing">Trailer</span>{% endif %}
+                        {% if not movie.ott_platforms or movie.ott_platforms == '{}' %}<span class="badge-missing">OTT</span>{% endif %}
+                    </div>
+                    <div class="inventory-actions">
+                        <a class="btn-secondary" href="/admin/movie/search?q={{ movie.tmdb_id }}">Edit</a>
+                        <a class="btn-secondary" href="/movie/{{ movie.tmdb_id }}" target="_blank">Preview</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">No movies found for this filter.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.inventory-search {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.inventory-search input {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    min-width: 240px;
+}
+
+.inventory-search button {
+    border: none;
+    background: var(--accent-primary);
+    color: white;
+    padding: 0.6rem 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.inventory-card {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+.inventory-poster img {
+    width: 90px;
+    border-radius: 8px;
+}
+
+.poster-placeholder {
+    width: 90px;
+    height: 135px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+}
+
+.inventory-info h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+}
+
+.inventory-meta {
+    display: flex;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.6rem;
+}
+
+.inventory-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+</style>
+{% endblock %}

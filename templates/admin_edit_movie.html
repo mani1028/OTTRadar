@@ -18,12 +18,38 @@
     <!-- Search Results Grid -->
     {% if movies %}
     <div class="admin-section" style="margin-top: 2rem;">
-        <h2 style="margin-bottom: 1.5rem;"><i class="fas fa-film"></i> Found {{ movies|length }} Movie{{ 's' if movies|length != 1 else '' }} - Click Card to Edit</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0;"><i class="fas fa-film"></i> Found {{ movies|length }} Movie{{ 's' if movies|length != 1 else '' }}</h2>
+            
+            <!-- Bulk Actions Toolbar -->
+            <div class="bulk-actions-toolbar" id="bulk-toolbar" style="display: none;">
+                <span id="selected-count" style="margin-right: 1rem; font-weight: 500;">0 selected</span>
+                <button type="button" class="bulk-btn" onclick="bulkActivate()">
+                    <i class="fas fa-eye"></i> Activate
+                </button>
+                <button type="button" class="bulk-btn" onclick="bulkDeactivate()">
+                    <i class="fas fa-eye-slash"></i> Deactivate
+                </button>
+                <button type="button" class="bulk-btn" onclick="bulkRefreshOTT()">
+                    <i class="fas fa-sync"></i> Refresh OTT
+                </button>
+                <button type="button" class="bulk-btn" onclick="clearSelection()">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </div>
         
         <div class="movie-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem;">
             {% for movie in movies %}
-            <div class="movie-card-select" data-tmdb-id="{{ movie.tmdb_id }}" onclick="selectMovieForEdit(this)" style="cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent; position: relative;">
-                <div class="poster" style="position: relative;">
+            <div class="movie-card-select" data-tmdb-id="{{ movie.tmdb_id }}" data-movie-id="{{ movie.id }}" style="cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent; position: relative;">
+                <!-- Bulk Select Checkbox -->
+                <input type="checkbox" 
+                       class="movie-checkbox" 
+                       data-movie-id="{{ movie.id }}" 
+                       onclick="event.stopPropagation(); updateBulkToolbar();"
+                       style="position: absolute; top: 10px; left: 10px; width: 20px; height: 20px; cursor: pointer; z-index: 10;">
+                
+                <div class="poster" style="position: relative;" onclick="selectMovieForEdit(this.parentElement)">
                     {% if movie.poster %}
                         <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy" style="width: 100%; height: auto; border-radius: var(--radius-md); transition: transform 0.3s ease;">
                     {% else %}
@@ -34,8 +60,14 @@
                     <div style="position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.8); color: white; padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: bold;">
                         ID: {{ movie.tmdb_id }}
                     </div>
+                    <!-- Active/Inactive Badge -->
+                    {% if not movie.is_active %}
+                    <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(231, 76, 60, 0.9); color: white; padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: bold;">
+                        INACTIVE
+                    </div>
+                    {% endif %}
                 </div>
-                <div class="card-info" style="padding: 0.8rem 0;">
+                <div class="card-info" style="padding: 0.8rem 0;" onclick="selectMovieForEdit(this.parentElement)">
                     <h3 style="font-size: 0.95rem; margin: 0 0 0.3rem 0; line-height: 1.3; color: var(--text-primary);">{{ movie.title }}</h3>
                     <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.3rem;">
                         <span>{{ movie.release_date[:4] if movie.release_date else 'N/A' }}</span>
@@ -79,13 +111,22 @@
                     </div>
 
                     <div class="form-group">
+                        <label><i class="fas fa-key"></i> Internal Database ID</label>
+                        <input type="text" name="id" value="{{ movie.id if movie else '' }}" readonly>
+                    </div>
+                    <div class="form-group">
                         <label><i class="fas fa-hashtag"></i> TMDB ID</label>
-                        <input type="text" id="tmdb-id" disabled>
+                        <input type="text" id="tmdb-id" name="tmdb_id" value="{{ movie.tmdb_id if movie else '' }}" readonly>
                     </div>
 
                     <div class="form-group">
                         <label><i class="fas fa-calendar"></i> Release Date</label>
                         <input type="text" name="release_date" placeholder="YYYY-MM-DD">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> OTT Release Date</label>
+                        <input type="text" name="ott_release_date" placeholder="YYYY-MM-DD">
                     </div>
 
                     <div class="form-group">
@@ -116,6 +157,11 @@
                     <div class="form-group">
                         <label><i class="fas fa-theater-masks"></i> Genres</label>
                         <input type="text" name="genres" placeholder="Action, Drama, Comedy">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fab fa-youtube"></i> YouTube Trailer ID</label>
+                        <input type="text" name="youtube_trailer_id" placeholder="e.g. dQw4w9WgXcQ">
                     </div>
 
                     <!-- URLs -->
@@ -150,16 +196,57 @@
                     <div class="form-group full-width">
                         <label><i class="fas fa-tv"></i> OTT Platforms & Watch Links (JSON)</label>
                         <textarea name="ott_platforms" rows="6" required placeholder='{"Netflix": {"url": "https://...", "type": "subscription"}, "Amazon": {"url": "https://...", "type": "rental"}}'></textarea>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem;">
+                            <button type="button" class="btn-secondary" onclick="validateOttJson()" style="padding: 0.5rem 1rem;">
+                                <i class="fas fa-check-circle"></i> Validate JSON
+                            </button>
+                            <span id="ott-json-status" style="font-size: 0.9rem; color: var(--text-secondary);"></span>
+                        </div>
                         <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
-                            <strong>Format:</strong> {"Platform": {"url": "https://...", "type": "subscription/rental/free"}}<br>
+                            <strong>Format:</strong> {"Platform": {"url": "https://...", "type": "subscription/rental"}}<br>
                             <strong>Example:</strong> {"Netflix": {"url": "https://netflix.com/...", "type": "subscription"}}
                         </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-volume-up"></i> Has Telugu Audio</label>
+                        <input type="checkbox" name="has_telugu_audio">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-info-circle"></i> Status</label>
+                        <input type="text" name="status" placeholder="e.g. trending_hyderabad, new_on_ott">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-film"></i> Media Type</label>
+                        <input type="text" name="media_type" placeholder="movie or tv">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-layer-group"></i> Series Name</label>
+                        <input type="text" name="series_name" placeholder="Series name if TV">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-list-ol"></i> Season Number</label>
+                        <input type="number" name="season_number" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-list-ol"></i> Episode Number</label>
+                        <input type="number" name="episode_number" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-list-ol"></i> Episode Count</label>
+                        <input type="number" name="episode_count" min="0">
                     </div>
 
                     <!-- Checkboxes -->
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" name="is_active">
+                            <input type="checkbox" name="is_active" {% if movie and movie.is_active %}checked{% endif %}>
                             <i class="fas fa-eye"></i> Active (Show on site)
                         </label>
                     </div>
@@ -224,24 +311,49 @@ function selectMovieForEdit(cardElement) {
     
     if (!movieData) return;
     
-    // Populate form with movie data
+    // Populate form with movie data, handle missing fields gracefully
     const form = document.getElementById('edit-form');
-    form.title.value = movieData.title;
-    form.release_date.value = movieData.release_date;
-    form.rating.value = movieData.rating;
-    form.popularity.value = movieData.popularity;
-    form.runtime.value = movieData.runtime;
-    form.language.value = movieData.language;
-    form.certification.value = movieData.certification;
-    form.genres.value = movieData.genres;
-    form.poster.value = movieData.poster;
-    form.backdrop.value = movieData.backdrop;
-    form.trailer.value = movieData.trailer;
-    form.overview.value = movieData.overview;
-    form.cast.value = movieData.cast;
-    form.ott_platforms.value = movieData.ott_platforms;
-    form.is_active.checked = movieData.is_active;
-    form.is_dubbed.checked = movieData.is_dubbed;
+    if (!form) return;
+    const setValue = (name, value) => {
+        const field = form[name];
+        if (!field) {
+            console.warn('Form field missing:', name);
+            return;
+        }
+        if (field.type === 'checkbox') {
+            field.checked = !!value;
+        } else {
+            field.value = value ?? '';
+        }
+    };
+    setValue('title', movieData.title);
+    setValue('release_date', movieData.release_date);
+    setValue('rating', movieData.rating);
+    setValue('popularity', movieData.popularity);
+    setValue('runtime', movieData.runtime);
+    setValue('language', movieData.language);
+    setValue('certification', movieData.certification);
+    setValue('genres', movieData.genres);
+    setValue('poster', movieData.poster);
+    setValue('backdrop', movieData.backdrop);
+    setValue('trailer', movieData.trailer);
+    setValue('overview', movieData.overview);
+    setValue('cast', movieData.cast);
+    setValue('ott_platforms', movieData.ott_platforms);
+    setValue('youtube_trailer_id', movieData.youtube_trailer_id);
+    setValue('ott_release_date', movieData.ott_release_date);
+    setValue('status', movieData.status);
+    setValue('source', movieData.source);
+    setValue('fetch_source', movieData.fetch_source);
+    setValue('last_checked', movieData.last_checked);
+    setValue('last_verified', movieData.last_verified);
+    setValue('created_at', movieData.created_at);
+    setValue('media_type', movieData.media_type);
+    setValue('series_name', movieData.series_name);
+    setValue('season_number', movieData.season_number);
+    setValue('episode_number', movieData.episode_number);
+    setValue('episode_count', movieData.episode_count);
+    setValue('has_telugu_audio', movieData.has_telugu_audio);
     
     // Update poster and backdrop previews
     const posterDisplay = document.getElementById('poster-display');
@@ -264,8 +376,8 @@ function selectMovieForEdit(cardElement) {
     // Update title
     document.getElementById('edit-title').innerHTML = `<i class="fas fa-film"></i> Edit: ${movieData.title}`;
     
-    // Set TMDB ID field
-    document.getElementById('tmdb-id').value = tmdbId;
+    // Set TMDB ID field using helper
+    setValue('tmdb_id', tmdbId);
     
     // Show edit form
     document.getElementById('edit-section').style.display = 'block';
@@ -297,9 +409,157 @@ function updateBackdropPreview() {
         backdropDisplay.src = url;
     }
 }
+
+// ===== BULK ACTIONS =====
+function updateBulkToolbar() {
+    const checkboxes = document.querySelectorAll('.movie-checkbox:checked');
+    const count = checkboxes.length;
+    const toolbar = document.getElementById('bulk-toolbar');
+    const countDisplay = document.getElementById('selected-count');
+    
+    if (count > 0) {
+        toolbar.style.display = 'flex';
+        countDisplay.textContent = `${count} selected`;
+    } else {
+        toolbar.style.display = 'none';
+    }
+}
+
+function getSelectedMovieIds() {
+    const checkboxes = document.querySelectorAll('.movie-checkbox:checked');
+    return Array.from(checkboxes).map(cb => cb.dataset.movieId);
+}
+
+function bulkActivate() {
+    const ids = getSelectedMovieIds();
+    if (ids.length === 0) return;
+    
+    if (confirm(`Activate ${ids.length} movies?`)) {
+        submitBulkAction('activate', ids);
+    }
+}
+
+function bulkDeactivate() {
+    const ids = getSelectedMovieIds();
+    if (ids.length === 0) return;
+    
+    if (confirm(`Deactivate ${ids.length} movies? They will be hidden from the site.`)) {
+        submitBulkAction('deactivate', ids);
+    }
+}
+
+function bulkRefreshOTT() {
+    const ids = getSelectedMovieIds();
+    if (ids.length === 0) return;
+    
+    if (confirm(`Queue ${ids.length} movies for OTT refresh? This will trigger a background update.`)) {
+        submitBulkAction('refresh_ott', ids);
+    }
+}
+
+function clearSelection() {
+    document.querySelectorAll('.movie-checkbox').forEach(cb => cb.checked = false);
+    updateBulkToolbar();
+}
+
+function submitBulkAction(action, movieIds) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for('admin_bulk_actions') }}';
+    
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = action;
+    form.appendChild(actionInput);
+    
+    movieIds.forEach(id => {
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'movie_ids[]';
+        idInput.value = id;
+        form.appendChild(idInput);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function validateOttJson() {
+    const textarea = document.querySelector('textarea[name="ott_platforms"]');
+    const statusEl = document.getElementById('ott-json-status');
+    const jsonString = textarea ? textarea.value : '';
+
+    statusEl.textContent = 'Validating...';
+    statusEl.style.color = 'var(--text-secondary)';
+
+    fetch('/admin/validate-json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ json_string: jsonString })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.valid) {
+            statusEl.textContent = 'Valid JSON';
+            statusEl.style.color = '#4caf50';
+        } else {
+            statusEl.textContent = data.error || 'Invalid JSON';
+            statusEl.style.color = '#e50914';
+        }
+    })
+    .catch(err => {
+        statusEl.textContent = `Validation failed: ${err.message}`;
+        statusEl.style.color = '#e50914';
+    });
+}
+
 </script>
 
 <style>
+.bulk-actions-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 8px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bulk-btn {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.bulk-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.movie-checkbox:checked + .poster {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
 .movie-card-select:hover {
     transform: translateY(-8px);
     border-color: var(--accent-color, #2196F3);

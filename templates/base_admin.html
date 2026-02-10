@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/popup-flash.css') }}">
 </head>
 <body>
     <!-- Admin Navigation Bar -->
@@ -25,8 +26,12 @@
 
             <!-- Admin Navigation Links -->
             <ul class="nav-links desktop">
-                <li><a href="{{ url_for('admin') }}"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('admin_movie_search') }}"><i class="fas fa-edit"></i> Edit Movie</a></li>
+                <li><a href="{{ url_for('admin') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="{{ url_for('admin_inventory') }}"><i class="fas fa-database"></i> Inventory</a></li>
+                <li><a href="{{ url_for('admin_operations') }}"><i class="fas fa-robot"></i> Operations</a></li>
+                <li><a href="{{ url_for('admin_data_integrity') }}"><i class="fas fa-clipboard-check"></i> Data Integrity</a></li>
+                <li><a href="{{ url_for('admin_movie_search') }}"><i class="fas fa-edit"></i> Movie Editor</a></li>
+                <li><a href="{{ url_for('admin_audit_log') }}"><i class="fas fa-history"></i> Audit Log</a></li>
                 <li><a href="{{ url_for('index') }}" target="_blank"><i class="fas fa-external-link-alt"></i> View Site</a></li>
                 <li><a href="{{ url_for('admin_logout') }}" style="color: var(--accent-primary);"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
@@ -40,8 +45,12 @@
         <!-- Mobile Menu (hidden by default) -->
         <div class="mobile-menu hidden" id="mobile-menu-content">
             <ul>
-                <li><a href="{{ url_for('admin') }}"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="{{ url_for('admin_movie_search') }}"><i class="fas fa-edit"></i> Edit Movie</a></li>
+                <li><a href="{{ url_for('admin') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="{{ url_for('admin_inventory') }}"><i class="fas fa-database"></i> Inventory</a></li>
+                <li><a href="{{ url_for('admin_operations') }}"><i class="fas fa-robot"></i> Operations</a></li>
+                <li><a href="{{ url_for('admin_data_integrity') }}"><i class="fas fa-clipboard-check"></i> Data Integrity</a></li>
+                <li><a href="{{ url_for('admin_movie_search') }}"><i class="fas fa-edit"></i> Movie Editor</a></li>
+                <li><a href="{{ url_for('admin_audit_log') }}"><i class="fas fa-history"></i> Audit Log</a></li>
                 <li><a href="{{ url_for('index') }}" target="_blank"><i class="fas fa-external-link-alt"></i> View Site</a></li>
                 <li><a href="{{ url_for('admin_logout') }}" style="color: var(--accent-primary);"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>

@@ -1,155 +1,256 @@
 {% extends "base_admin.html" %}
 
-{% block title %}Admin Panel - OTT Tracker{% endblock %}
+{% block title %}Data Integrity Command Center - OTT RADAR{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Tab Navigation -->
-    <div class="admin-tabs">
-        <button class="tab-btn active" data-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</button>
-        <button class="tab-btn" data-tab="edit"><i class="fas fa-edit"></i> Edit Movie</button>
-        <button class="tab-btn" data-tab="submissions"><i class="fas fa-inbox"></i> Submissions ({{ pending_submissions }})</button>
-    </div>
-
-    <!-- Dashboard Tab -->
-    <div class="tab-content active" id="dashboard">
-        <div class="admin-stats">
-            <div class="stat-card">
-                <i class="fas fa-film"></i>
-                <h3>{{ total_movies }}</h3>
-                <p>Active Movies</p>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-inbox"></i>
-                <h3>{{ total_submissions }}</h3>
-                <p>Total Submissions</p>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-clock"></i>
-                <h3>{{ pending_submissions }}</h3>
-                <p>Pending Requests</p>
-            </div>
+    <div class="admin-header">
+        <div>
+            <h1><i class="fas fa-clipboard-check"></i> Data Integrity Command Center</h1>
+            <p class="section-desc">Monitor database health, spot missing data, and prioritize fixes.</p>
         </div>
-
-        <div class="admin-section">
-            <h2><i class="fas fa-tools"></i> Maintenance Tools</h2>
-            <div class="tool-buttons">
-                <button onclick="alert('Run: python -m scripts.enrich_existing')" class="tool-btn">
-                    <i class="fas fa-sync"></i> Enrich Database
-                </button>
-                <button onclick="alert('Run: python -m scripts.bulk_import')" class="tool-btn">
-                    <i class="fas fa-download"></i> Bulk Import
-                </button>
-                <button onclick="alert('Run: python -m scripts.export_db')" class="tool-btn">
-                    <i class="fas fa-file-export"></i> Export Database
-                </button>
-            </div>
+        <div class="header-actions">
+            <a class="btn-secondary" href="/admin/data-integrity"><i class="fas fa-clipboard-list"></i> Full Integrity</a>
+            <a class="btn-primary" href="/admin/inventory"><i class="fas fa-database"></i> Open Inventory</a>
         </div>
     </div>
 
-    <!-- Edit Movie Tab -->
-    <div class="tab-content" id="edit">
-        <div class="admin-section">
-            <h2><i class="fas fa-search"></i> Search Movie</h2>
-            <form method="POST" action="{{ url_for('admin_movie_search') }}" class="search-movie-form">
-                <input type="text" name="search_query" placeholder="Enter TMDB ID or movie title..." required>
-                <button type="submit"><i class="fas fa-search"></i> Search</button>
-            </form>
-            <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
-                <i class="fas fa-info-circle"></i> Search by TMDB ID for exact match, or type movie name for close match (50%+ similarity)
-            </p>
+    <div class="admin-stats-grid">
+        <div class="stat-card-modern" onclick="refreshMetrics()">
+            <div class="stat-icon"><i class="fas fa-film"></i></div>
+            <h3 id="total-movies">{{ metrics.total_movies or 0 }}</h3>
+            <p>Active Movies</p>
+            <small class="stat-change">+{{ metrics.recently_updated or 0 }} this week</small>
+        </div>
+
+        <div class="stat-card-modern warn" onclick="filterDeadLinks()">
+            <div class="stat-icon"><i class="fas fa-unlink"></i></div>
+            <h3 id="dead-links">{{ metrics.dead_links or 0 }}</h3>
+            <p>Dead Links</p>
+            <small class="stat-change">Movies with no OTT</small>
+        </div>
+
+        <div class="stat-card-modern">
+            <div class="stat-icon"><i class="fas fa-inbox"></i></div>
+            <h3>{{ pending_submissions }}</h3>
+            <p>Pending Requests</p>
+            <small class="stat-change">{{ metrics.total_submissions or 0 }} total</small>
+        </div>
+
+        <div class="stat-card-modern {% if metrics.recent_errors > 0 %}error{% endif %}">
+            <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <h3 id="recent-errors">{{ metrics.recent_errors or 0 }}</h3>
+            <p>Script Errors (24h)</p>
+            <small class="stat-change">Last 24 hours</small>
         </div>
     </div>
 
-    <!-- Submissions Tab -->
-    <div class="tab-content" id="submissions">
-        <div class="admin-section">
-            <h2><i class="fas fa-inbox"></i> User Submissions <span style="color: var(--text-secondary); font-size: 0.9rem;">(Showing 20 most recent)</span></h2>
-            
-            {% if submissions %}
-            <div class="submissions-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Movie Title</th>
-                            <th>Type</th>
-                            <th>Platform</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for submission in submissions %}
-                        <tr>
-                            <td class="title-col">
-                                <strong>{{ submission.movie_title }}</strong>
-                                {% if submission.comment %}
-                                <br><small>{{ submission.comment[:50] }}{% if submission.comment|length > 50 %}...{% endif %}</small>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge badge-{{ submission.submission_type }}">
-                                    {{ submission.submission_type|title }}
-                                </span>
-                            </td>
-                            <td>{{ submission.platform_name or '—' }}</td>
-                            <td>
-                                <span class="badge badge-{{ submission.status }}">
-                                    {{ submission.status|title }}
-                                </span>
-                            </td>
-                            <td>{{ submission.created_at.strftime('%b %d, %Y') }}</td>
-                            <td class="actions-col">
-                                {% if submission.status == 'pending' %}
-                                <form method="POST" action="{{ url_for('admin_submission_update', id=submission.id) }}" style="display: inline;">
-                                    <button type="submit" name="action" value="approve" class="action-btn approve">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                </form>
-                                <form method="POST" action="{{ url_for('admin_submission_update', id=submission.id) }}" style="display: inline;">
-                                    <button type="submit" name="action" value="reject" class="action-btn reject">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-                                <form method="POST" action="{{ url_for('admin_submission_delete', id=submission.id) }}" style="display: inline;" onsubmit="return confirm('Delete this submission?')">
-                                    <button type="submit" class="action-btn delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="admin-section">
+        <div class="section-head">
+            <h2><i class="fas fa-chart-bar"></i> Database Health Snapshot</h2>
+            <a class="text-link" href="/admin/data-integrity">View details</a>
+        </div>
+        <div class="integrity-snapshot">
+            {% for field_key, data in integrity_stats.items() %}
+            <div class="snapshot-card">
+                <div class="snapshot-title">{{ data.label }}</div>
+                <div class="snapshot-progress">
+                    <div class="snapshot-fill" style="width: {{ data.percent }}%"></div>
+                </div>
+                <div class="snapshot-meta">
+                    <span>{{ data.available }} ok</span>
+                    <span class="missing">{{ data.missing }} missing</span>
+                </div>
             </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <div class="section-head">
+            <h2><i class="fas fa-chart-pie"></i> OTT Platform Distribution</h2>
+        </div>
+        <div class="platform-stats">
+            {% if metrics.platform_stats %}
+                {% for platform, count in metrics.platform_stats.items() %}
+                <div class="platform-bar">
+                    <span class="platform-name">{{ platform|title }}</span>
+                    <div class="platform-progress">
+                        <div class="platform-fill" style="width: {{ (count / metrics.total_movies * 100)|round(1) }}%"></div>
+                    </div>
+                    <span class="platform-count">{{ count }}</span>
+                </div>
+                {% endfor %}
             {% else %}
-            <div class="empty-state">
-                <i class="fas fa-inbox"></i>
-                <p>No submissions yet</p>
-            </div>
+                <p class="empty-state">No platform data</p>
             {% endif %}
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <div class="section-head">
+            <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+        </div>
+        <div class="quick-actions">
+            <a class="quick-card" href="/admin/operations">
+                <i class="fas fa-robot"></i>
+                <div>
+                    <h3>Operations</h3>
+                    <p>Run scripts, review logs, and check automations.</p>
+                </div>
+            </a>
+            <a class="quick-card" href="/admin/inventory?filter=missing_poster">
+                <i class="fas fa-image"></i>
+                <div>
+                    <h3>Missing Posters</h3>
+                    <p>Find movies without posters and fill them fast.</p>
+                </div>
+            </a>
+            <a class="quick-card" href="/admin/inventory?filter=missing_trailer">
+                <i class="fas fa-video"></i>
+                <div>
+                    <h3>Missing Trailers</h3>
+                    <p>Target titles without trailers or trailer IDs.</p>
+                </div>
+            </a>
         </div>
     </div>
 </div>
 
 <script>
-// Tab switching logic
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const tabName = btn.dataset.tab;
-        
-        // Update active tab button
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        // Show corresponding content
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        document.getElementById(tabName).classList.add('active');
+function refreshMetrics() {
+    fetch('/admin/api/metrics')
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('total-movies').textContent = data.total_movies || 0;
+        document.getElementById('dead-links').textContent = data.dead_links || 0;
+        document.getElementById('recent-errors').textContent = data.recent_errors || 0;
     });
-});
+}
+
+setInterval(refreshMetrics, 30000);
+
+function filterDeadLinks() {
+    window.location.href = '/admin/inventory?filter=missing_ott';
+}
 </script>
+
+<style>
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    margin: 2rem 0 1rem;
+}
+
+.admin-header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.text-link {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.integrity-snapshot {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.snapshot-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.snapshot-title {
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+}
+
+.snapshot-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    margin-bottom: 0.6rem;
+}
+
+.snapshot-fill {
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.snapshot-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.snapshot-meta .missing {
+    color: #f39c12;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.quick-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.quick-card i {
+    font-size: 1.6rem;
+    color: var(--accent-primary);
+}
+
+.quick-card h3 {
+    margin: 0 0 0.3rem;
+}
+
+.quick-card p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.quick-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-primary);
+}
+
+@media (max-width: 900px) {
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
 {% endblock %}

@@ -1,0 +1,292 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Data Integrity - OTT RADAR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="admin-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+            <div>
+                <h2><i class="fas fa-clipboard-check"></i> Database Health</h2>
+                <p class="section-desc">Track missing data by field and fix incomplete movies from one screen.</p>
+            </div>
+            <a href="/admin" class="btn-secondary" style="text-decoration: none;">
+                <i class="fas fa-arrow-left"></i> Back to Admin
+            </a>
+        </div>
+    </div>
+
+    <div class="integrity-grid">
+        {% for field_key, data in stats.items() %}
+        <div class="integrity-card">
+            <div class="integrity-card-header">
+                <h3>{{ data.label }}</h3>
+                <span class="integrity-percent">{{ data.percent }}%</span>
+            </div>
+            <div class="integrity-progress">
+                <div class="integrity-fill" style="width: {{ data.percent }}%"></div>
+            </div>
+            <div class="integrity-meta">
+                <span>Available: <strong>{{ data.available }}</strong></span>
+                <span class="missing">Missing: <strong>{{ data.missing }}</strong></span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="admin-section" style="margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+            <div>
+                <h2><i class="fas fa-list-check"></i> Incomplete Movies</h2>
+                <p class="section-desc">Top 50 movies with missing fields. Use quick edit to update a single field.</p>
+            </div>
+            <div class="pill">Total movies: {{ total_movies }}</div>
+        </div>
+
+        {% if movies_with_missing %}
+        <div class="integrity-table">
+            <div class="integrity-row integrity-header">
+                <div>Movie</div>
+                <div>Missing Fields</div>
+                <div>Quick Edit</div>
+                <div>Full Edit</div>
+            </div>
+            {% for item in movies_with_missing %}
+            <div class="integrity-row" data-tmdb-id="{{ item.movie.tmdb_id }}">
+                <div>
+                    <div class="movie-title">{{ item.movie.title }}</div>
+                    <div class="movie-meta">TMDB: {{ item.movie.tmdb_id }}{% if item.movie.release_date %} | {{ item.movie.release_date }}{% endif %}</div>
+                </div>
+                <div class="missing-badges">
+                    {% for field in item.missing_fields %}
+                    <span class="badge-missing">{{ field }}</span>
+                    {% endfor %}
+                    {% if not item.missing_fields %}
+                    <span class="badge-ok">Complete</span>
+                    {% endif %}
+                </div>
+                <div class="quick-edit">
+                    <select class="field-select">
+                        <option value="">Select field</option>
+                        {% for field in field_options %}
+                        <option value="{{ field.key }}">{{ field.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" class="field-value" placeholder="Enter value">
+                    <button class="btn-primary" type="button" onclick="saveQuickEdit(this)">Save</button>
+                    <div class="quick-status"></div>
+                </div>
+                <div>
+                    <a class="btn-secondary" href="/admin/movie/search?q={{ item.movie.tmdb_id }}">Open Editor</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">All movies look complete. Nothing to fix right now.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.integrity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin: 1.5rem 0 2rem;
+}
+
+.integrity-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.integrity-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.integrity-card h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.integrity-percent {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.integrity-progress {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.integrity-fill {
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.integrity-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.integrity-meta .missing {
+    color: #f39c12;
+}
+
+.integrity-table {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.integrity-row {
+    display: grid;
+    grid-template-columns: 2fr 2fr 3fr 1fr;
+    gap: 1rem;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.integrity-header {
+    background: transparent;
+    border: none;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.movie-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.movie-meta {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.2rem;
+}
+
+.missing-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.badge-missing {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-ok {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.quick-edit {
+    display: grid;
+    grid-template-columns: 1.2fr 1.4fr auto;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.quick-edit input,
+.quick-edit select {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 0.6rem;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.quick-status {
+    grid-column: 1 / -1;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.pill {
+    background: rgba(30, 150, 252, 0.12);
+    color: var(--primary-color);
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+@media (max-width: 960px) {
+    .integrity-row {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-edit {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function saveQuickEdit(button) {
+    const row = button.closest('.integrity-row');
+    const tmdbId = row.dataset.tmdbId;
+    const fieldSelect = row.querySelector('.field-select');
+    const valueInput = row.querySelector('.field-value');
+    const status = row.querySelector('.quick-status');
+
+    const field = fieldSelect.value;
+    const value = valueInput.value.trim();
+
+    if (!field) {
+        status.textContent = 'Select a field to update.';
+        return;
+    }
+
+    if (!value) {
+        status.textContent = 'Enter a value before saving.';
+        return;
+    }
+
+    status.textContent = 'Saving...';
+
+    fetch(`/admin/movie/${tmdbId}/quick-edit`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({field: field, value: value})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            status.textContent = 'Saved.';
+            valueInput.value = '';
+        } else {
+            status.textContent = data.error || 'Save failed.';
+        }
+    })
+    .catch(() => {
+        status.textContent = 'Network error while saving.';
+    });
+}
+</script>
+{% endblock %}

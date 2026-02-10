@@ -2,6 +2,91 @@
 
 {% block title %}{{ movie.title }} - OTT Tracker{% endblock %}
 
+{% block meta_title %}{{ movie.title }} - Where to Watch{% endblock %}
+{% block meta_description %}Watch {{ movie.title }} on Netflix, Prime Video, Hotstar & more. Find where to watch with ratings, cast & reviews.{% endblock %}
+{% block og_type %}movie{% endblock %}
+{% block og_title %}{{ movie.title }}{% endblock %}
+{% block og_description %}{{ movie.overview[:160] if movie.overview else "Watch " + movie.title }}. {% if movie.rating %}Rating: {{ "%.1f"|format(movie.rating) }}/10.{% endif %} Find where to watch on streaming platforms.{% endblock %}
+{% block og_image %}{{ movie.poster or url_for('static', filename='images/og-image.jpg', _external=True) }}{% endblock %}
+{% block twitter_title %}{{ movie.title }}{% endblock %}
+{% block twitter_description %}{% if movie.rating %}{{ "%.1f"|format(movie.rating) }}/10. {% endif %}Watch {{ movie.title }} on OTT platforms - Netflix, Prime Video, Hotstar & more. Find where to watch.{% endblock %}
+{% block twitter_image %}{{ movie.poster or url_for('static', filename='images/og-image.jpg', _external=True) }}{% endblock %}
+
+{% block schema_markup %}
+<!-- Movie Schema Markup (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Movie",
+  "name": "{{ movie.title }}",
+    "description": {{ (movie.overview[:200] if movie.overview else movie.title) | tojson }},
+  {% if movie.poster %}"image": {{ movie.poster | tojson }},{% endif %}
+  {% if movie.release_date %}"datePublished": {{ movie.release_date | tojson }},{% endif %}
+  {% if movie.runtime %}"duration": {{ ("PT" + (movie.runtime|string) + "M") | tojson }},{% endif %}
+  {% if movie.rating %}"aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": {{ "%.1f"|format(movie.rating) }},
+    "bestRating": 10,
+    "worstRating": 0,
+    "ratingCount": 1000
+  },{% endif %}
+  {% if movie.genres %}"genre": [{% set genre_list = movie.genres.split(',') %}{% for genre in genre_list[:5] %}{{ genre.strip() | tojson }}{{ "," if not loop.last else "" }}{% endfor %}],{% endif %}
+  {% if movie.cast %}"actor": [{% set cast_list = movie.cast.split(',') %}{% for actor in cast_list[:5] %}{
+      "@type": "Person",
+      "name": {{ actor.strip() | tojson }}
+    }{{ "," if not loop.last else "" }}{% endfor %}],{% endif %}
+  "url": {{ request.url | tojson }}
+}
+</script>
+{% if movie.media_type == 'tv' %}
+<!-- TV Series Schema Markup (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TVSeries",
+  "name": {{ (movie.series_name or movie.title) | tojson }},
+    "description": {{ (movie.overview[:200] if movie.overview else movie.title) | tojson }},
+  {% if movie.poster %}"image": {{ movie.poster | tojson }},{% endif %}
+  "numberOfSeasons": 1,
+  {% if movie.episode_count %}"numberOfEpisodes": {{ movie.episode_count }},{% endif %}
+  {% if movie.rating %}"aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": {{ "%.1f"|format(movie.rating) }},
+    "bestRating": 10,
+    "worstRating": 0
+  }{% endif %}
+}
+</script>
+{% endif %}
+<!-- BreadcrumbList Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": {{ url_for('index', _external=True) | tojson }}
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Movies",
+    "item": {{ url_for('filter_movies', _external=True) | tojson }}
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": {{ movie.title | tojson }},
+      "item": {{ request.url | tojson }}
+    }
+  ]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <!-- Movie Hero Banner -->
 <div class="movie-detail-hero" style="position: relative; height: 450px; background: linear-gradient(135deg, #1a1a1a, #0a0a0a); overflow: hidden;">
@@ -81,12 +166,192 @@
                     {% endif %}
                     
                     {% if movie.youtube_trailer_id or movie.trailer %}
-                    <button type="button" class="hero-trailer-btn" data-youtube-id="{{ movie.youtube_trailer_id }}" data-trailer="{{ movie.trailer or '' }}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(229,9,20,0.9); border-radius: 999px; border: none; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                    <button type="button" class="hero-trailer-btn" data-trailer-id="{{ movie.youtube_trailer_id or '' }}" data-trailer-url="{{ movie.trailer or '' }}" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(229,9,20,0.9); border-radius: 999px; border: none; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
                         <i class="fas fa-play-circle"></i>
                         <span>▶ Watch Trailer</span>
                     </button>
                     {% endif %}
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MOBILE MINI-HERO -->
+<div class="mobile-only movie-detail-mini-hero is-expanded">
+    <div class="mini-hero-poster">
+        {% if movie.poster %}
+        <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="eager">
+        {% else %}
+        <div class="mini-hero-poster-fallback">
+            <i class="fas fa-image"></i>
+        </div>
+        {% endif %}
+    </div>
+    <div class="mini-hero-info">
+        <h1 class="movie-title-bold">{{ movie.title }}</h1>
+        <div class="movie-meta-chips">
+            {% if movie.release_date %}
+            <span class="meta-chip">{{ movie.release_date[:4] }}</span>
+            {% endif %}
+            {% if movie.language %}
+            <span class="meta-chip">{{ movie.language|upper }}</span>
+            {% endif %}
+            {% if movie.rating %}
+            <span class="meta-chip rating-chip">&#9733; {{ "%.1f"|format(movie.rating) }}</span>
+            {% endif %}
+        </div>
+        {% if movie.overview %}
+        <p class="overview-text">{{ movie.overview }}</p>
+        <button type="button" class="overview-toggle" aria-expanded="true">Read less</button>
+        {% endif %}
+        {% if not movie.youtube_trailer_id and (movie.tmdb_id or movie.trailer) %}
+         <button type="button" class="hero-trailer-btn" onclick="fetchTrailer()" style="margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(229,9,20,0.9); border-radius: 999px; border: none; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+            <i class="fas fa-play-circle"></i>
+            <span>▶ Load Trailer</span>
+         </button>
+         <script>
+         function fetchTrailer() {
+            const btn = event.target.closest('button');
+            const tmdbId = {{ movie.tmdb_id }};
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            fetch(`/api/fetch-trailer/${tmdbId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.youtube_trailer_id) {
+                        location.reload();
+                    } else {
+                        btn.innerHTML = '<i class="fas fa-exclamation-circle"></i> No trailer found';
+                        btn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    btn.innerHTML = '<i class="fas fa-film"></i> Load Trailer';
+                    btn.disabled = false;
+                    console.error('Error:', err);
+                });
+         }
+         </script>
+        {% endif %}
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggles = document.querySelectorAll('.overview-toggle');
+    toggles.forEach(function (toggle) {
+        const hero = toggle.closest('.movie-detail-mini-hero');
+        if (hero) {
+            const expanded = hero.classList.contains('is-expanded');
+            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            toggle.textContent = expanded ? 'Read less' : 'Read more';
+        }
+        toggle.addEventListener('click', function () {
+            const hero = toggle.closest('.movie-detail-mini-hero');
+            if (!hero) {
+                return;
+            }
+            const isExpanded = hero.classList.toggle('is-expanded');
+            toggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+            toggle.textContent = isExpanded ? 'Read less' : 'Read more';
+        });
+    });
+});
+</script>
+
+<!-- MOBILE-ONLY WATCH BUTTONS (iBOMMA STYLE) -->
+<div class="watch-links-section mobile-only">
+    <h2>Watch Now</h2>
+    {% if ott_data %}
+        {% for platform, info in ott_data.items() %}
+        {% if info and (info.get('url') or info.get('link') or info.get('watch_url')) %}
+        <a href="{{ info.get('url') or info.get('link') or info.get('watch_url') }}" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="watch-btn-modern platform-{{ platform|lower|replace(' ', '-') }}">
+            <i class="fas fa-play"></i>
+            {{ platform }}
+        </a>
+        {% endif %}
+        {% endfor %}
+    {% else %}
+    <div class="not-available">Platform links updating soon...</div>
+    {% endif %}
+</div>
+
+<!-- TRAILER VIDEO PLAYER -->
+<div style="padding: 12px 16px ; margin-bottom: 20px;">
+    {% if movie.youtube_trailer_id %}
+    <div class="trailer-compact">
+        <iframe
+            src="https://www.youtube-nocookie.com/embed/{{ movie.youtube_trailer_id }}?autoplay=0&playsinline=1&rel=0&modestbranding=1"
+            title="Trailer"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+        ></iframe>
+    </div>
+    <style>
+        .trailer-compact {
+            width: 420px;
+            float: left;
+            margin-right: 24px;
+            margin-bottom: 20px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .trailer-compact iframe {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border: none;
+            display: block;
+            background: #000;
+            border-radius: 8px;
+        }
+        @media (max-width: 600px) {
+            .trailer-compact {
+                float: none;
+                width: 100%;
+                margin-right: 0;
+            }
+        }
+    </style>
+    <a href="https://www.youtube.com/watch?v={{ movie.youtube_trailer_id }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; padding: 10px 12px; background: rgba(229,9,20,0.15); border: 1px solid rgba(229,9,20,0.3); color: var(--text-primary); border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none;">
+        <i class="fab fa-youtube" style="color: #ff0000;"></i> Open on YouTube
+    </a>
+    {% endif %}
+</div>
+
+<!-- MOBILE-ONLY QUICK MOVIE DETAILS -->
+<div class="mobile-only" style="padding: 16px 12px; background: rgba(255,255,255,0.02); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 20px;">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+        {% if movie.rating %}
+        <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">Rating</div>
+            <div style="font-size: 1.1rem; font-weight: 700; color: #ffc107;">{{ "%.1f"|format(movie.rating) }}/10</div>
+        </div>
+        {% endif %}
+        
+        {% if movie.runtime %}
+        <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">Duration</div>
+            <div style="font-size: 1.1rem; font-weight: 700;">{{ movie.runtime }}m</div>
+        </div>
+        {% endif %}
+        
+        <div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;">Language</div>
+            <div style="font-size: 1.1rem; font-weight: 700;">
+                {% if movie.language == 'te' %}
+                🇮🇳 TLG
+                {% elif movie.language == 'ta' %}
+                🇮🇳 TML
+                {% elif movie.language == 'hi' %}
+                🇮🇳 HND
+                {% else %}
+                {{ movie.language.upper() if movie.language else 'N/A' }}
+                {% endif %}
             </div>
         </div>
     </div>
@@ -105,13 +370,33 @@
             
             @media (max-width: 768px) {
                 .movie-content-grid {
-                    grid-template-columns: 1fr !important;
+                    display: flex !important;
+                    flex-direction: column !important;
                     gap: 1rem !important;
                 }
-                
+
                 .movie-detail-content {
                     padding: 20px 16px 90px 16px !important;
                 }
+
+                /* Remove main-content-column wrapper styling */
+                .main-content-column { 
+                    order: 100 !important;
+                    display: contents !important;
+                }
+                
+                /* Direct children of grid get global flex ordering */
+                .sidebar-column { order: 500 !important; }
+                .back-button-wrapper { order: 800 !important; display: flex !important; }
+                
+                /* Sections get explicit order values that override nth-of-type */
+                /* Using combinators to target sections directly */
+                .main-content-column > *:first-of-type { order: 1 !important; } /* Overview */
+                .main-content-column > *:nth-child(2) { order: 2 !important; } /* Genres */
+                .main-content-column > *:nth-child(3) { order: 3 !important; } /* Audio */
+                .main-content-column > *:nth-child(4) { order: 4 !important; } /* Languages */
+                .main-content-column > .cast-section-modern { order: 600 !important; }
+                .main-content-column > .similar-section { order: 700 !important; }
             }
             
             @media (max-width: 480px) {
@@ -125,10 +410,10 @@
             }
         </style>
         <!-- Main Content -->
-        <div>
+        <div class="main-content-column">
             <!-- Overview Section -->
             {% if movie.overview %}
-            <section style="margin-bottom: 3.5rem;">
+            <section class="overview-section" style="margin-bottom: 3.5rem;">
                 <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
                     <i class="fas fa-align-left" style="color: var(--accent-primary); font-size: 1.3rem;"></i> Overview
                 </h2>
@@ -178,7 +463,7 @@
             </section>
             {% endif %}
 
-            <!-- Available Languages Section -->
+            <!-- Available Languages Section (Dynamic from OTT Data) -->
             <section style="margin-bottom: 3.5rem;">
                 <h2 style="margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
                     <i class="fas fa-globe" style="color: var(--accent-primary); font-size: 1.3rem;"></i> Available Languages
@@ -192,7 +477,7 @@
                         'kn': {'name': 'Kannada', 'flag': '🇮🇳', 'color': '#4CAF50'},
                         'ml': {'name': 'Malayalam', 'flag': '🇮🇳', 'color': '#00BCD4'}
                     } %}
-                    {% set primary_lang = movie.language if movie.language else 'te' %}
+                    {% set primary_lang = movie.language if movie.language else 'en' %}
                     {% set lang_info = lang_dict.get(primary_lang, {'name': primary_lang.upper(), 'flag': '🌐', 'color': '#9C27B0'}) %}
                     
                     <!-- Primary Language -->
@@ -202,17 +487,20 @@
                         <span style="position: absolute; top: -8px; right: 10px; background: {{ lang_info.color }}; color: white; font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 999px; font-weight: 700;">PRIMARY</span>
                     </span>
                     
-                    <!-- Additional Language: English (if not primary) -->
-                    {% if primary_lang != 'en' %}
-                    <span style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.5rem; background: rgba(33,150,243,0.1); border: 1.5px solid rgba(33,150,243,0.5); border-radius: 8px; font-size: 0.95rem; font-weight: 500; color: var(--text-primary);">
-                        <span style="font-size: 1.2rem;">🇬🇧</span> English (if available)
+                    <!-- Dynamic Additional Languages (from OTT Data) -->
+                    {% for lang_code, lang_name in available_languages.items() %}
+                    {% if lang_code != primary_lang %}
+                    {% set sec_info = lang_dict.get(lang_code, {'name': lang_name, 'flag': '🌐', 'color': '#9C27B0'}) %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.5rem; background: rgba({{ sec_info.color }}, 0.1); border: 1.5px solid rgba({{ sec_info.color }}, 0.5); border-radius: 8px; font-size: 0.95rem; font-weight: 500; color: var(--text-primary);">
+                        <span style="font-size: 1.2rem;">{{ sec_info.flag }}</span> {{ sec_info.name }}
                     </span>
                     {% endif %}
+                    {% endfor %}
                     
-                    <!-- Additional Language: Hindi (if not primary) -->
-                    {% if primary_lang != 'hi' %}
-                    <span style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.5rem; background: rgba(25,118,210,0.1); border: 1.5px solid rgba(25,118,210,0.5); border-radius: 8px; font-size: 0.95rem; font-weight: 500; color: var(--text-primary);">
-                        <span style="font-size: 1.2rem;">🇮🇳</span> Hindi (if available)
+                    <!-- Fallback Message if no languages found -->
+                    {% if available_languages|length == 0 %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1.5rem; background: rgba(255,255,255,0.1); border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-weight: 500; color: var(--text-secondary);">
+                        <i class="fas fa-info-circle"></i> Language info not available
                     </span>
                     {% endif %}
                 </div>
@@ -224,235 +512,81 @@
                 </p>
             </section>
 
-            <!-- Cast Ribbon Section (Zero-Download, Live TMDB Images) -->
             {% if movie.cast %}
-            <section style="margin-bottom: 3.5rem;">
-                <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
+            <section class="cast-section-modern" style="margin-bottom: 3.5rem;">
+                <h2 class="detail-section-title" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
                     <i class="fas fa-users" style="color: var(--accent-primary); font-size: 1.3rem;"></i> Cast
                 </h2>
-                
-                <!-- Cast Grid Container (Wraps to multiple rows) -->
-                <div style="
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                    gap: 2rem;
-                    padding-bottom: 0.5rem;
-                " class="cast-grid" id="cast-ribbon">
-                    
-                    <!-- Cast items will be rendered here -->
+
+                <div class="cast-neat-grid">
+                    {% set cast_list = movie.cast.split(',') %}
+                    {% for actor in cast_list %}
+                    {% set actor_name = actor.strip() %}
+                    {% if actor_name %}
+                    <a href="{{ url_for('person_details', actor_name=actor_name|lower|replace(' ', '-')) }}" class="cast-member-card">
+                        <div class="cast-avatar-wrapper" data-actor-name="{{ actor_name }}">
+                            <span class="cast-initials">{{ actor_name[0]|upper }}</span>
+                        </div>
+                        <div class="cast-info-neat">
+                            <p class="actor-name">{{ actor_name }}</p>
+                            <p class="character-name">Cast Member</p>
+                        </div>
+                    </a>
+                    {% endif %}
+                    {% endfor %}
                 </div>
-                
-                <!-- CSS for Cast Grid & Mobile Optimization -->
-                <style>
-                    .cast-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                        gap: 2rem;
-                        width: 100%;
-                    }
-                    
-                    /* Responsive: Tablet & Below */
-                    @media (max-width: 1024px) {
-                        .cast-grid {
-                            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-                            gap: 1.5rem;
-                        }
-                    }
-                    
-                    /* Mobile optimization */
-                    @media (max-width: 768px) {
-                        .cast-grid {
-                            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                            gap: 1rem;
-                        }
-                    }
-                    
-                    .cast-avatar-img {
-                        width: 100%;
-                        height: 100%;
-                        object-fit: cover;
-                        border-radius: 50%;
-                    }
-                </style>
-                
-                <!-- Cast Grid Script (Fetches TMDB images for actors) -->
-                <script>
-                (function() {
-                    const castRibbon = document.getElementById('cast-ribbon');
-                    const castDataRaw = `{{ movie.cast | safe }}`;
-                    const tmdbApiKey = 'e99307154fabc578ecbacc3a4c5832b8'; // Public API key
-                    
-                    // Try to parse as JSON first (new format with profile_path)
-                    let castList = [];
-                    try {
-                        const parsed = JSON.parse(castDataRaw);
-                        castList = Array.isArray(parsed) ? parsed : [];
-                    } catch (e) {
-                        // Fall back to string format (comma-separated names)
-                        castList = castDataRaw.split(',').map(name => ({
-                            name: name.trim(),
-                            profile_path: null
-                        })).filter(c => c.name);
-                    }
-                    
-                    // Render cast items (limit to 20)
-                    castList.slice(0, 20).forEach((actor, index) => {
-                        const actorName = actor.name || actor;
-                        const actorSlug = actorName.toLowerCase().replace(/\s+/g, '-');
-                        let profilePath = actor.profile_path;
-                        const initials = actorName.charAt(0).toUpperCase();
-                        
-                        const castItem = document.createElement('a');
-                        castItem.href = `/person/${actorSlug}`;
-                        castItem.style.cssText = `
-                            text-decoration: none;
-                            color: inherit;
-                            text-align: center;
-                            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                            cursor: pointer;
-                            display: flex;
-                            flex-direction: column;
-                            gap: 0.8rem;
-                        `;
-                        
-                        const avatarContainer = document.createElement('div');
-                        avatarContainer.style.cssText = `
-                            position: relative;
-                            width: 120px;
-                            height: 120px;
-                            margin: 0 auto;
-                            border-radius: 50%;
-                            overflow: hidden;
-                            border: 3px solid transparent;
-                            background: linear-gradient(135deg, var(--accent-primary), #ff1744);
-                            padding: 3px;
-                            transition: all 0.3s ease;
-                            box-shadow: 0 8px 24px rgba(229, 9, 20, 0.2);
-                        `;
-                        
-                        avatarContainer.onmouseover = function() {
-                            this.style.borderColor = 'var(--accent-primary)';
-                            this.style.boxShadow = '0 12px 32px rgba(229, 9, 20, 0.4)';
-                        };
-                        avatarContainer.onmouseout = function() {
-                            this.style.borderColor = 'transparent';
-                            this.style.boxShadow = '0 8px 24px rgba(229, 9, 20, 0.2)';
-                        };
-                        
-                        const imageContainer = document.createElement('div');
-                        
-                        // Generate color based on actor name for unique initial backgrounds
-                        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
-                        const colorIndex = actorName.charCodeAt(0) % colors.length;
-                        const bgColor = colors[colorIndex];
-                        
-                        imageContainer.style.cssText = `
-                            width: 100%;
-                            height: 100%;
-                            border-radius: 50%;
-                            overflow: hidden;
-                            background: linear-gradient(135deg, ${bgColor}80, ${bgColor}40);
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            position: relative;
-                        `;
-                        
-                        // Initial background with name (VISIBLE IMMEDIATELY - NO FLASH)
-                        const fallbackSpan = document.createElement('span');
-                        fallbackSpan.style.cssText = `
-                            position: absolute;
-                            font-weight: 700;
-                            font-size: 2.5rem;
-                            color: rgba(255, 255, 255, 0.95);
-                            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-                            z-index: 1;
-                        `;
-                        fallbackSpan.textContent = initials;
-                        imageContainer.appendChild(fallbackSpan);
-                        
-                        // If profile_path exists, show image
-                        if (profilePath) {
-                            const img = document.createElement('img');
-                            img.src = `https://image.tmdb.org/t/p/w185${profilePath}`;
-                            img.alt = actorName;
-                            img.className = 'cast-avatar-img';
-                            img.onerror = function() {
-                                this.style.display = 'none';
-                            };
-                            imageContainer.appendChild(img);
-                        } else {
-                            // Fetch actor image from TMDB API (only if not already cached)
-                            fetch(`https://api.themoviedb.org/3/search/person?api_key=${tmdbApiKey}&query=${encodeURIComponent(actorName)}&page=1`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.results && data.results.length > 0) {
-                                        const person = data.results[0];
-                                        if (person.profile_path) {
-                                            const img = document.createElement('img');
-                                            img.src = `https://image.tmdb.org/t/p/w185${person.profile_path}`;
-                                            img.alt = actorName;
-                                            img.className = 'cast-avatar-img';
-                                            img.style.cssText = `position: absolute; top: 0; left: 0; z-index: 2;`;
-                                            img.onerror = function() {
-                                                this.remove();
-                                            };
-                                            imageContainer.appendChild(img);
-                                        }
-                                    }
-                                })
-                                .catch(err => console.log(`Could not fetch image for ${actorName}`));
-                        }
-                        
-                        avatarContainer.appendChild(imageContainer);
-                        
-                        const nameContainer = document.createElement('div');
-                        const nameText = document.createElement('p');
-                        nameText.style.cssText = `
-                            font-weight: 600;
-                            font-size: 0.9rem;
-                            margin: 0;
-                            white-space: nowrap;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            color: var(--text-primary);
-                        `;
-                        nameText.textContent = actorName;
-                        
-                        const roleText = document.createElement('p');
-                        roleText.style.cssText = `
-                            font-size: 0.75rem;
-                            color: var(--text-secondary);
-                            margin: 0;
-                        `;
-                        roleText.textContent = 'Cast Member';
-                        
-                        nameContainer.appendChild(nameText);
-                        nameContainer.appendChild(roleText);
-                        
-                        castItem.appendChild(avatarContainer);
-                        castItem.appendChild(nameContainer);
-                        
-                        // Add hover effect
-                        castItem.onmouseover = function() {
-                            this.style.transform = 'translateY(-8px) scale(1.05)';
-                        };
-                        castItem.onmouseout = function() {
-                            this.style.transform = 'translateY(0) scale(1)';
-                        };
-                        
-                        castRibbon.appendChild(castItem);
-                    });
-                })();
-                </script>
             </section>
-            {% endif %}
+                        {% endif %}
+<script>
+// Fetch and display cast images from backend API if available
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.cast-avatar-wrapper').forEach(function(wrapper) {
+        var actorName = wrapper.getAttribute('data-actor-name');
+        if (!actorName) return;
+        fetch('/api/actor-image/' + encodeURIComponent(actorName.replace(/ /g, '-')))
+            .then(r => r.json())
+            .then(data => {
+                if (data.profile_path) {
+                    var img = document.createElement('img');
+                    img.src = 'https://image.tmdb.org/t/p/w185' + data.profile_path;
+                    img.alt = actorName;
+                    img.className = 'cast-avatar-img';
+                    // Remove initials and insert image
+                    wrapper.innerHTML = '';
+                    wrapper.appendChild(img);
+                }
+            });
+    });
+});
+</script>
+<style>
+.cast-avatar-wrapper {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: #181818;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #fff;
+    margin: 0 auto 0.5rem auto;
+    overflow: hidden;
+    position: relative;
+}
+.cast-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+</style>
 
 
 
             <!-- Similar Movies Section -->
             {% if similar_movies %}
-            <section style="margin-bottom: 3.5rem;">
+            <section class="similar-section" style="margin-bottom: 3.5rem;">
                 <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.4rem;">
                     <i class="fas fa-film" style="color: var(--accent-primary); font-size: 1.3rem;"></i> More Like This
                 </h2>
@@ -461,7 +595,7 @@
                     <a href="{{ url_for('movie_detail', movie_identifier=sim_movie.title|movie_slug) }}" style="text-decoration: none; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='scale(1.08)'; this.children[0].style.boxShadow='0 12px 32px rgba(229,9,20,0.5)'" onmouseout="this.style.transform='scale(1)'; this.children[0].style.boxShadow='0 8px 16px rgba(0,0,0,0.4)'">
                         <div style="position: relative; padding-bottom: 150%; overflow: hidden; border-radius: var(--radius-md); box-shadow: 0 8px 16px rgba(0,0,0,0.4); transition: all 0.3s ease;">
                             {% if sim_movie.poster %}
-                            <img src="{{ sim_movie.poster }}" alt="{{ sim_movie.title }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+                            <img src="{{ sim_movie.poster }}" alt="{{ sim_movie.title }}" loading="lazy" fetchpriority="low" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
                             {% else %}
                             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.1)); display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-image" style="font-size: 2rem; color: var(--text-secondary);"></i>
@@ -485,40 +619,61 @@
                 </div>
             </section>
             {% endif %}
+
         </div>
 
         <!-- Sidebar -->
-        <div>
-            <!-- Release Dates Card -->
-            <div style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+        <div class="sidebar-column">
+            <!-- Release Dates Card (DESKTOP ONLY) -->
+            <div class="desktop-only" style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
                 <h3 style="margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem;">
                     <i class="fas fa-calendar-alt" style="color: var(--accent-primary); font-size: 1.1rem;"></i> <span style="flex: 1;">Release Dates</span>
                 </h3>
-                
                 {% if movie.release_date %}
                 <!-- Theatrical Release -->
-                <div style="padding: 1rem; background: rgba(33,150,243,0.1); border-left: 3px solid #2196f3; border-radius: 6px; margin-bottom: 1rem;">
+                <div style="padding: 1rem; background: rgba(33,150,243,0.1); border-left: 3px solid #2196f3; border-radius: 6px; margin-bottom: 0.7rem;">
                     <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;">
                         <i class="fas fa-film" style="margin-right: 0.5rem; color: #2196f3;"></i> Theatrical Release
                     </div>
-                    <div style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">
+                    <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">
                         {{ movie.release_date | strftime('%B %d, %Y') if movie.release_date else movie.release_date }}
-                    </div>
-                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem;">
-                        {{ movie.release_date[:4] }}
                     </div>
                 </div>
                 {% endif %}
-                
-                <!-- OTT Release Dates (will be shown below each platform) -->
-                <div style="font-size: 0.85rem; color: var(--text-secondary); padding: 0.8rem; background: rgba(255,193,7,0.1); border-radius: 6px; margin-top: 0.5rem;">
-                    <i class="fas fa-info-circle" style="color: #ffc107; margin-right: 0.5rem;"></i>
-                    <strong>OTT release dates</strong> shown with each platform below
+                {% if movie.ott_release_date %}
+                <!-- OTT Release Date (from DB) -->
+                <div style="padding: 0.7rem 1rem; background: rgba(255,87,34,0.10); border-left: 3px solid #ff5722; border-radius: 6px; margin-bottom: 0.5rem;">
+                    <div style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <i class="fas fa-tv" style="margin-right: 0.4rem; color: #ff5722;"></i> OTT Release
+                    </div>
+                    <div style="font-size: 0.98rem; color: var(--text-primary); font-weight: 500;">
+                        {{ movie.ott_release_date }}
+                    </div>
                 </div>
-            </div>
+                {% endif %}
+                {% if ott_data %}
+                {% set ott_release = None %}
+                {% for platform, info in ott_data.items() %}
+                    {% if info and (info.get('last_change_date') or info.get('release_date')) %}
+                        {% set ott_release = info.get('last_change_date') or info.get('release_date') %}
+                    {% endif %}
+                {% endfor %}
+                {% if ott_release %}
+                <!-- OTT Release Date -->
+                <div style="padding: 0.7rem 1rem; background: rgba(229,9,20,0.08); border-left: 3px solid var(--accent-primary); border-radius: 6px; margin-bottom: 0.5rem;">
+                    <div style="font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <i class="fas fa-tv" style="margin-right: 0.4rem; color: var(--accent-primary);"></i> OTT Release
+                    </div>
+                    <div style="font-size: 0.98rem; color: var(--text-primary); font-weight: 500;">
+                        {{ ott_release | strftime('%b %d, %Y') if ott_release else ott_release }}
+                    </div>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div> <!-- END desktop-only Release Dates -->
 
-            <!-- Where to Watch Card -->
-            <div style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+            <!-- Where to Watch Card - DESKTOP ONLY -->
+            <div class="desktop-only" style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
                 <h3 style="margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem;">
                     <i class="fas fa-tv" style="color: var(--accent-primary); font-size: 1.1rem;"></i> Where to Watch
                 </h3>
@@ -537,6 +692,7 @@
                         {% for platform, info in sorted_otts %}
                         {% if primary_count[0] < 2 %}
                         {% set ott_link = info.get('link') or info.get('url') if info else '' %}
+                        {% set is_search = info and (info.get('type') == 'search' or info.get('monetization_type') == 'search' or info.get('is_placeholder')) %}
                         {% if info and ott_link %}
                         {% set platform_class = platform|lower|replace(' ', '-')|replace('+', 'plus')|replace('&', 'and')|replace('/', '-')|replace('.', '')|replace(':', '') %}
                         <a href="{{ ott_link }}" target="_blank" rel="noopener noreferrer" class="ott-btn ott-{{ platform_class }}" style="margin-bottom: 1rem;">
@@ -547,9 +703,9 @@
                                 <span class="ott-btn-logo ott-btn-fallback">{{ platform[:1].upper() }}</span>
                                 {% endif %}
                                 <div>
-                                    <span style="font-weight: 600; display: block;">Watch on {{ platform }}</span>
+                                    <span style="font-weight: 600; display: block;">{{ 'Search on' if is_search else 'Watch on' }} {{ platform }}</span>
                                     <!-- OTT Release Date -->
-                                    {% if info.get('last_change_date') or info.get('release_date') %}
+                                    {% if not is_search and (info.get('last_change_date') or info.get('release_date')) %}
                                     <span style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 0.2rem;">
                                         <i class="fas fa-calendar-check" style="margin-right: 0.3rem;"></i>
                                         Available since: {{ (info.get('last_change_date') or info.get('release_date')) | strftime('%b %d, %Y') if (info.get('last_change_date') or info.get('release_date')) else 'Date not available' }}
@@ -557,11 +713,9 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            {% if info.get('is_free') or (info.get('monetization_type') == 'free') %}
-                            <span class="ott-badge-pill" style="font-size: 10px;">FREE</span>
-                            {% elif info.get('rent') %}
+                            {% if not is_search and info.get('rent') %}
                             <span class="ott-badge-pill" style="font-size: 10px;">RENT</span>
-                            {% elif info.get('buy') %}
+                            {% elif not is_search and info.get('buy') %}
                             <span class="ott-badge-pill" style="font-size: 10px;">BUY</span>
                             {% endif %}
                         </a>
@@ -582,6 +736,7 @@
                             {% for platform, info in sorted_otts %}
                             {% if hidden_count[0] >= 2 %}
                             {% set ott_link = info.get('link') or info.get('url') if info else '' %}
+                            {% set is_search = info and (info.get('type') == 'search' or info.get('monetization_type') == 'search' or info.get('is_placeholder')) %}
                             {% if info and ott_link %}
                             {% set platform_class = platform|lower|replace(' ', '-')|replace('+', 'plus')|replace('&', 'and')|replace('/', '-')|replace('.', '')|replace(':', '') %}
                             <a href="{{ ott_link }}" target="_blank" rel="noopener noreferrer" class="ott-btn ott-{{ platform_class }}" style="padding: 0.8rem 1rem; font-size: 13px; margin-bottom: 0.8rem;">
@@ -592,9 +747,9 @@
                                     <span class="ott-btn-logo ott-btn-fallback" style="font-size: 12px;">{{ platform[:1].upper() }}</span>
                                     {% endif %}
                                     <div>
-                                        <span style="font-weight: 600; display: block;">Watch on {{ platform }}</span>
+                                        <span style="font-weight: 600; display: block;">{{ 'Search on' if is_search else 'Watch on' }} {{ platform }}</span>
                                         <!-- OTT Release Date -->
-                                        {% if info.get('last_change_date') or info.get('release_date') %}
+                                        {% if not is_search and (info.get('last_change_date') or info.get('release_date')) %}
                                         <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-top: 0.2rem;">
                                             <i class="fas fa-calendar-check" style="margin-right: 0.3rem;"></i>
                                             Available since: {{ (info.get('last_change_date') or info.get('release_date')) | strftime('%b %d, %Y') if (info.get('last_change_date') or info.get('release_date')) else 'Date not available' }}
@@ -602,11 +757,9 @@
                                         {% endif %}
                                     </div>
                                 </div>
-                                {% if info.get('is_free') or (info.get('monetization_type') == 'free') %}
-                                <span class="ott-badge-pill" style="font-size: 9px;">FREE</span>
-                                {% elif info.get('rent') %}
+                                {% if not is_search and info.get('rent') %}
                                 <span class="ott-badge-pill" style="font-size: 9px;">RENT</span>
-                                {% elif info.get('buy') %}
+                                {% elif not is_search and info.get('buy') %}
                                 <span class="ott-badge-pill" style="font-size: 9px;">BUY</span>
                                 {% endif %}
                             </a>
@@ -623,10 +776,12 @@
                     <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem;">Not available on tracked platforms</p>
                 </div>
                 {% endif %}
-            </div>
+            </div> <!-- END desktop-only Where to Watch -->
 
-            <!-- Additional Movie Information Card -->
-            <div style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+            <!-- Affiliate CTAs (Smart buttons based on platform availability) -->
+            <!-- Affiliate CTAs (DESKTOP ONLY) -->
+            <!-- Additional Movie Information Card (DESKTOP ONLY) -->
+            <div class="desktop-only" style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
                 <h3 style="margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem;">
                     <i class="fas fa-sparkles" style="color: var(--accent-primary); font-size: 1.1rem;"></i> Key Details
                 </h3>
@@ -662,19 +817,19 @@
                     <!-- Fetch Source -->
                     {% if movie.fetch_source %}
                     <div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <!--<div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.5px;">
                             <i class="fas fa-database" style="margin-right: 0.4rem; color: #2196f3;"></i> Data Source
                         </div>
                         <div style="padding: 0.5rem 1rem; background: rgba(33,150,243,0.15); border: 1px solid rgba(33,150,243,0.3); border-radius: 6px; color: var(--text-primary); font-weight: 600; display: inline-block; font-size: 0.9rem; text-transform: capitalize;">
                             {{ movie.fetch_source.replace('_', ' ').title() }}
-                        </div>
+                        </div> -->
                     </div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Movie Details Card -->
-            <div style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+            <!-- Movie Details Card (DESKTOP ONLY) -->
+            <div class="desktop-only" style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
                 <h3 style="margin: 0 0 1.2rem 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.75rem;">
                     <i class="fas fa-info-circle" style="color: var(--accent-primary);"></i> Details
                 </h3>
@@ -744,7 +899,7 @@
                 </div>
 
                 <!-- Metadata Footer -->
-                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+               <!-- <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
                     {% if movie.last_updated %}
                     <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 0.5rem 0;">
                         <i class="fas fa-sync-alt"></i> Updated: {{ movie.last_updated.strftime('%b %d, %Y') }}
@@ -755,11 +910,11 @@
                         <i class="fas fa-calendar-plus"></i> Added: {{ movie.created_at.strftime('%b %d, %Y') }}
                     </p>
                     {% endif %}
-                </div>
-            </div>
+                </div>-->
+            </div> <!-- END desktop-only Details -->
 
-            <!-- User Actions Card -->
-            <div style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
+            <!-- User Actions Card (DESKTOP ONLY) -->
+            <div class="desktop-only" style="background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.05)); padding: 1.8rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 2rem; backdrop-filter: blur(10px);">
                 <h3 style="margin: 0 0 1.2rem 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.75rem;">
                     <i class="fas fa-heart" style="color: var(--accent-primary);"></i> Actions
                 </h3>
@@ -772,7 +927,7 @@
                         <i class="fas fa-share-alt"></i> Share
                     </button>
                 </div>
-            </div>
+            </div> <!-- END desktop-only User Actions -->
             
             <!-- Wishlist & Share Script -->
             <script>
@@ -867,8 +1022,11 @@
             })();
             </script>
 
-            <!-- Back Button -->
-            <a href="javascript:history.back()" style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.08); color: var(--text-primary); text-decoration: none; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.15); font-weight: 600; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+        </div>
+        
+        <!-- Back Button -->
+        <div class="back-button-wrapper">
+            <a href="javascript:history.back()" style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 1rem; background: rgba(255,255,255,0.08); color: var(--text-primary); text-decoration: none; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.15); font-weight: 600; transition: all 0.3s ease; cursor: pointer; margin: 0 16px;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
                 <i class="fas fa-arrow-left"></i> Go Back
             </a>
         </div>
@@ -882,23 +1040,121 @@
             <i class="fas fa-times"></i>
         </button>
         <div class="trailer-modal__frame">
-            <iframe id="trailerFrame" src="" title="Trailer" allow="autoplay; fullscreen" allowfullscreen></iframe>
+            <iframe id="trailerFrame" src="" title="Trailer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
     </div>
 </div>
+<style>
+    .trailer-modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        top: 0; left: 0; right: 0; bottom: 0;
+        align-items: center;
+        justify-content: center;
+    }
+    .trailer-modal.is-open {
+        display: flex;
+    }
+    .trailer-modal__backdrop {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.75);
+        z-index: 0;
+    }
+    .trailer-modal__dialog {
+        position: relative;
+        z-index: 1;
+        background: #181818;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+        max-width: 520px;
+        width: 95vw;
+        padding: 0 0 1.5rem 0;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: trailerModalFadeIn 0.2s;
+    }
+    @keyframes trailerModalFadeIn {
+        from { transform: translateY(40px) scale(0.98); opacity: 0; }
+        to { transform: none; opacity: 1; }
+    }
+    .trailer-modal__close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.7);
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+        transition: background 0.2s;
+    }
+    .trailer-modal__close:hover {
+        background: rgba(229,9,20,0.9);
+    }
+    .trailer-modal__frame {
+        width: 100%;
+        padding-top: 56.25%;
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #000;
+        margin-top: 2.5rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    .trailer-modal__frame iframe {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 12px;
+    }
+    @media (max-width: 600px) {
+        .trailer-modal__dialog {
+            max-width: 100vw;
+            border-radius: 0;
+            padding-bottom: 0.5rem;
+        }
+        .trailer-modal__frame {
+            border-radius: 0;
+            margin-top: 2rem;
+        }
+        .trailer-modal__close {
+            top: 6px;
+            right: 6px;
+        }
+    }
+</style>
 
 <script>
     (function () {
         var modal = document.getElementById('trailerModal');
         var frame = document.getElementById('trailerFrame');
-        var openers = document.querySelectorAll('[data-trailer]');
+        var openers = document.querySelectorAll('.hero-trailer-btn');
         var closers = document.querySelectorAll('[data-trailer-close]');
 
-        function openTrailer(url) {
-            if (!url) {
-                return;
-            }
-            frame.src = url;
+        function extractYoutubeId(value) {
+            if (!value) return '';
+            var match = value.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{6,})/);
+            return match ? match[1] : value;
+        }
+
+        function openTrailerById(trailerId) {
+            if (!trailerId) return;
+            var youtubeId = extractYoutubeId(trailerId);
+            var origin = encodeURIComponent(window.location.origin);
+            frame.src = 'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=1&playsinline=1&rel=0&modestbranding=1&origin=' + origin;
             modal.classList.add('is-open');
             modal.setAttribute('aria-hidden', 'false');
         }
@@ -911,7 +1167,9 @@
 
         openers.forEach(function (button) {
             button.addEventListener('click', function () {
-                openTrailer(button.getAttribute('data-trailer'));
+                var trailerId = button.getAttribute('data-trailer-id');
+                var trailerUrl = button.getAttribute('data-trailer-url');
+                openTrailerById(trailerId || trailerUrl);
             });
         });
 

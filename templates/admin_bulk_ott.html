@@ -1,0 +1,895 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<div class="container" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+    <h1 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;">
+        <i class="fas fa-link" style="color: var(--accent-primary);"></i> Bulk OTT Link Entry
+    </h1>
+
+    <!-- Filters Section -->
+    <div style="background: linear-gradient(135deg, rgba(229,9,20,0.1), rgba(255,87,34,0.1)); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--border);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr auto auto auto; gap: 1rem; align-items: end;">
+            <!-- Language Filter -->
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                    <i class="fas fa-globe" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>Filter by Language
+                </label>
+                <select id="languageFilter" style="width: 100%; padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 1rem; cursor: pointer;">
+                    <option value="">All Languages</option>
+                    <option value="te">Telugu</option>
+                    <option value="ta">Tamil</option>
+                    <option value="hi">Hindi</option>
+                    <option value="en">English</option>
+                    <option value="kn">Kannada</option>
+                    <option value="ml">Malayalam</option>
+                </select>
+            </div>
+
+            <!-- Year Filter -->
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                    <i class="fas fa-calendar" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>Filter by Year
+                </label>
+                <select id="yearFilter" style="width: 100%; padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 1rem; cursor: pointer;">
+                    <option value="">All Years</option>
+                    {% for year in years %}
+                    <option value="{{ year }}">{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Apply Filters Button -->
+            <button onclick="applyFilters()" style="padding: 0.8rem 1.5rem; background: linear-gradient(135deg, var(--accent-primary), #ff1744); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(229,9,20,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <i class="fas fa-search" style="margin-right: 0.5rem;"></i>Filter
+            </button>
+
+            <!-- Clear Filters Button -->
+            <button onclick="clearFilters()" style="padding: 0.8rem 1.5rem; background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid #ffc107; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,193,7,0.3)'" onmouseout="this.style.background='rgba(255,193,7,0.2)'">
+                <i class="fas fa-times-circle" style="margin-right: 0.5rem;"></i>Clear
+            </button>
+
+            <!-- Check Database Button -->
+            <button onclick="checkDatabase()" style="padding: 0.8rem 1.5rem; background: rgba(0,150,136,0.2); color: #009688; border: 1px solid #009688; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0,150,136,0.3)'" onmouseout="this.style.background='rgba(0,150,136,0.2)'">
+                <i class="fas fa-database" style="margin-right: 0.5rem;"></i>Check DB
+            </button>
+        </div>
+        <p style="margin: 1rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">
+            <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
+            Showing <strong id="movieCount">0</strong> movies | Workflow: Click <strong>Find</strong> (search all platforms) → Select platform → Paste link → Click <strong>Save</strong> → Auto-removes
+        </p>
+    </div>
+
+    <!-- Movies Table -->
+    <div style="background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, rgba(229,9,20,0.15), rgba(255,87,34,0.15)); border-bottom: 2px solid var(--border);">
+                        <th style="padding: 1.2rem; text-align: left; font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                            <i class="fas fa-film" style="margin-right: 0.5rem;"></i>Movie Name
+                        </th>
+                        <th style="padding: 1.2rem; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                            <i class="fas fa-calendar" style="margin-right: 0.5rem;"></i>Year
+                        </th>
+                        <th style="padding: 1.2rem; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                            <i class="fas fa-globe" style="margin-right: 0.5rem;"></i>Lang
+                        </th>
+                        <th style="padding: 1.2rem; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                            <i class="fas fa-tv" style="margin-right: 0.5rem;"></i>Platform
+                        </th>
+                        <th style="padding: 1.2rem; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                            <i class="fas fa-link" style="margin-right: 0.5rem;"></i>OTT Link
+                        </th>
+                        <th style="padding: 1.2rem; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                            <i class="fas fa-cog" style="margin-right: 0.5rem;"></i>Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="moviesTable">
+                    <!-- Rows will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="paginationContainer" style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+        <!-- Will be populated by JavaScript -->
+    </div>
+</div>
+
+<style>
+    tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+        background: rgba(229, 9, 20, 0.05);
+    }
+
+    .pagination-btn {
+        padding: 0.6rem 1rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 600;
+    }
+
+    .pagination-btn:hover {
+        background: rgba(229, 9, 20, 0.1);
+        border-color: var(--accent-primary);
+    }
+
+    .pagination-btn.active {
+        background: var(--accent-primary);
+        color: white;
+        border-color: var(--accent-primary);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+
+<script>
+    let allMovies = [];
+    let filteredMovies = [];
+    let currentPage = 1;
+    const itemsPerPage = 25;
+
+    // Load movies on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMovies();
+    });
+
+    // Load movies from server
+    function loadMovies() {
+        fetch('/api/movies-without-ott')
+            .then(response => response.json())
+            .then(data => {
+                allMovies = data.movies;
+                filteredMovies = [...allMovies];
+                currentPage = 1;
+                console.log('Loaded movies:', allMovies.length);
+                
+                if (allMovies.length === 0) {
+                    alert('⚠️  No movies without OTT links found!\nClick "Check DB" to see database status.');
+                    document.getElementById('moviesTable').innerHTML = '<tr><td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No movies available</td></tr>';
+                    return;
+                }
+                
+                renderTable();
+                updateMovieCount();
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('❌ Error: ' + err.message);
+            });
+    }
+
+    // Apply filters
+    function applyFilters() {
+        const lang = document.getElementById('languageFilter').value;
+        const year = document.getElementById('yearFilter').value;
+
+        filteredMovies = allMovies.filter(m => {
+            const lMatch = !lang || m.language === lang;
+            const yMatch = !year || (m.release_date && m.release_date.startsWith(year));
+            return lMatch && yMatch;
+        });
+
+        currentPage = 1;
+        renderTable();
+        updateMovieCount();
+    }
+
+    // Clear filters
+    function clearFilters() {
+        document.getElementById('languageFilter').value = '';
+        document.getElementById('yearFilter').value = '';
+        filteredMovies = [...allMovies];
+        currentPage = 1;
+        renderTable();
+        updateMovieCount();
+    }
+
+    // Render table
+    function renderTable() {
+        const tbody = document.getElementById('moviesTable');
+        tbody.innerHTML = '';
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const pageMovies = filteredMovies.slice(start, start + itemsPerPage);
+
+        if (!pageMovies.length) {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No movies found</td></tr>';
+            return;
+        }
+
+        pageMovies.forEach(m => {
+            const row = document.createElement('tr');
+            row.setAttribute('data-movie-id', m.id);
+            const year = m.release_date ? m.release_date.substring(0, 4) : 'N/A';
+            const lang = getLanguageName(m.language);
+
+            row.innerHTML = `
+                <td style="padding: 1rem 1.2rem; color: var(--text-primary);">${m.title}</td>
+                <td style="padding: 1rem 1.2rem; text-align: center; color: var(--text-secondary);">${year}</td>
+                <td style="padding: 1rem 1.2rem; text-align: center;">
+                    <span style="padding: 0.4rem 0.8rem; background: rgba(76,175,80,0.15); color: #4caf50; border-radius: 4px; font-size: 0.85rem; font-weight: 600;">${lang}</span>
+                </td>
+                <td style="padding: 1rem 1.2rem; text-align: center;">
+                    <select class="platform-select" data-movie-id="${m.id}" style="padding: 0.5rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: 0.9rem;">
+                        <option value="">Select Platform</option>
+                        <option value="Netflix">Netflix</option>
+                        <option value="Prime Video">Prime Video</option>
+                        <option value="Hotstar">Hotstar</option>
+                        <option value="ZEE5">ZEE5</option>
+                        <option value="Sony LIV">Sony LIV</option>
+                        <option value="MX Player">MX Player</option>
+                        <option value="Aha">Aha</option>
+                        <option value="YouTube">YouTube</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </td>
+                <td style="padding: 1rem 1.2rem; text-align: center;">
+                    <input type="text" class="link-input" data-movie-id="${m.id}" placeholder="Paste link..." style="width: 250px; padding: 0.5rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: 0.9rem; box-sizing: border-box;">
+                </td>
+                <td style="padding: 1rem 1.2rem; text-align: center;">
+                    <button onclick="searchMovie('${m.title}', '${year}')" style="padding: 0.5rem 0.8rem; background: #4285f4; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.85rem; margin-right: 0.3rem;" onmouseover="this.style.background='#357ae8'" onmouseout="this.style.background='#4285f4'">
+                        <i class="fas fa-search"></i> Find
+                    </button>
+                    <button onclick="saveOttLinkInline('${m.id}', '${m.title}')" style="padding: 0.5rem 0.8rem; background: linear-gradient(135deg, #4caf50, #45a049); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.85rem;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        renderPagination();
+    }
+
+    // Search movie on Google (all platforms)
+    function searchMovie(title, year) {
+        const searchQuery = `${title} ${year} watch online`;
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`, '_blank');
+    }
+    
+    // Save OTT link directly from table row
+    function saveOttLinkInline(movieId, movieTitle) {
+        // Get platform dropdown and link input
+        const platformSelect = document.querySelector(`select.platform-select[data-movie-id="${movieId}"]`);
+        const linkInput = document.querySelector(`input.link-input[data-movie-id="${movieId}"]`);
+        
+        const platform = platformSelect.value.trim();
+        const link = linkInput.value.trim();
+        
+        if (!platform) {
+            alert('❌ Please select a platform');
+            platformSelect.focus();
+            return;
+        }
+        
+        if (!link) {
+            alert('❌ Please paste the OTT link');
+            linkInput.focus();
+            return;
+        }
+        
+        if (!link.startsWith('http')) {
+            alert('❌ Link must start with http:// or https://');
+            return;
+        }
+        
+        // Get the row and save button
+        const row = document.querySelector(`tr[data-movie-id="${movieId}"]`);
+        const saveBtn = row.querySelector('button:last-child');
+        const originalHTML = saveBtn.innerHTML;
+        
+        // Show loading
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        
+        fetch('/api/save-ott-entry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                movie_id: movieId,
+                platform: platform,
+                ott_link: link
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert(`✅ ${data.message}`);
+                
+                // Remove row with animation
+                row.style.transition = 'opacity 0.3s ease';
+                row.style.opacity = '0';
+                setTimeout(() => {
+                    row.remove();
+                    updateMovieCount();
+                }, 300);
+            } else {
+                alert(`❌ Error: ${data.error}`);
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalHTML;
+            }
+        })
+        .catch(err => {
+            alert(`❌ Error: ${err.message}`);
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalHTML;
+        });
+    }
+    
+
+    // Pagination
+    function renderPagination() {
+        const container = document.getElementById('paginationContainer');
+        container.innerHTML = '';
+        const total = Math.ceil(filteredMovies.length / itemsPerPage);
+        
+        if (total <= 1) return;
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'pagination-btn';
+        prevBtn.textContent = 'Previous';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTable(); } };
+        container.appendChild(prevBtn);
+
+        for (let i = 1; i <= total; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'pagination-btn' + (i === currentPage ? ' active' : '');
+            btn.textContent = i;
+            btn.onclick = () => { currentPage = i; renderTable(); };
+            container.appendChild(btn);
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'pagination-btn';
+        nextBtn.textContent = 'Next';
+        nextBtn.disabled = currentPage === total;
+        nextBtn.onclick = () => { if (currentPage < total) { currentPage++; renderTable(); } };
+        container.appendChild(nextBtn);
+    }
+
+    // Update count
+    function updateMovieCount() {
+        document.getElementById('movieCount').textContent = filteredMovies.length;
+    }
+
+    // Check database
+    function checkDatabase() {
+        fetch('/api/ott-diagnostics')
+            .then(r => r.json())
+            .then(data => {
+                const msg = `Total: ${data.total_movies}\nWith OTT: ${data.with_ott}\nWithout OTT: ${data.without_ott}\n\nLanguages: ${Object.entries(data.language_distribution).map(([l,c])=>`${getLanguageName(l)}:${c}`).join(', ')}\n\nTop Years: ${Object.entries(data.year_distribution).slice(0,5).map(([y,c])=>`${y}:${c}`).join(', ')}`;
+                alert(msg);
+            })
+            .catch(e => alert('Error: ' + e));
+    }
+
+    // Get language name
+    function getLanguageName(code) {
+        const langs = { 'te': 'Telugu', 'ta': 'Tamil', 'hi': 'Hindi', 'en': 'English', 'kn': 'Kannada', 'ml': 'Malayalam' };
+        return langs[code] || code || '?';
+    }
+</script>
+<div class="container" style="max-width: 1400px; margin: 0 auto; padding: 2rem;">
+    <h1 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem;">
+        <i class="fas fa-link" style="color: var(--accent-primary);"></i> Bulk OTT Link Entry
+    </h1>
+
+    <!-- Filters Section -->
+    <div style="background: linear-gradient(135deg, rgba(229,9,20,0.1), rgba(255,87,34,0.1)); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--border);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+            <!-- Language Filter -->
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                    <i class="fas fa-globe" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>Filter by Language
+                </label>
+                <select id="languageFilter" style="width: 100%; padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 1rem; cursor: pointer;">
+                    <option value="">All Languages</option>
+                    <option value="te">Telugu</option>
+                    <option value="ta">Tamil</option>
+                    <option value="hi">Hindi</option>
+                    <option value="en">English</option>
+                    <option value="kn">Kannada</option>
+                    <option value="ml">Malayalam</option>
+                </select>
+            </div>
+
+            <!-- Year Filter -->
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                    <i class="fas fa-calendar" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>Filter by Year
+                </label>
+                <select id="yearFilter" style="width: 100%; padding: 0.8rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 1rem; cursor: pointer;">
+                    <option value="">All Years</option>
+                    {% for year in years %}
+                    <option value="{{ year }}">{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Apply Filters Button -->
+            <button onclick="applyFilters()" style="padding: 0.8rem 1.5rem; background: linear-gradient(135deg, var(--accent-primary), #ff1744); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(229,9,20,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <i class="fas fa-search" style="margin-right: 0.5rem;"></i>Filter
+            </button>
+
+            <!-- Diagnostic Button -->
+            <button onclick="checkDatabase()" style="padding: 0.8rem 1.5rem; background: rgba(0,150,136,0.2); color: #009688; border: 1px solid #009688; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0,150,136,0.3)'" onmouseout="this.style.background='rgba(0,150,136,0.2)'">
+                <i class="fas fa-database" style="margin-right: 0.5rem;"></i>Check Database
+            </button>
+
+            <!-- Clear Filters Button -->
+            <button onclick="clearFilters()" style="padding: 0.8rem 1.5rem; background: rgba(255,193,7,0.2); color: #ffc107; border: 1px solid #ffc107; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,193,7,0.3)'" onmouseout="this.style.background='rgba(255,193,7,0.2)'">
+                <i class="fas fa-times-circle" style="margin-right: 0.5rem;"></i>Clear Filters
+            </button>
+        </div>
+        <p style="margin: 1rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">
+            <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
+            Showing <strong id="movieCount">0</strong> movies without OTT links
+        </p>
+    </div>
+
+    <!-- Movies Table -->
+    <div style="background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, rgba(229,9,20,0.15), rgba(255,87,34,0.15)); border-bottom: 2px solid var(--border);">
+                        <th style="padding: 1.2rem; text-align: left; font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                            <i class="fas fa-film" style="margin-right: 0.5rem;"></i>Movie Name
+                        </th>
+                        <th style="padding: 1.2rem; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                            <i class="fas fa-calendar" style="margin-right: 0.5rem;"></i>Released
+                        </th>
+                        <th style="padding: 1.2rem; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                            <i class="fas fa-globe" style="margin-right: 0.5rem;"></i>Language
+                        </th>
+                        <th style="padding: 1.2rem; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">
+                            <i class="fas fa-search" style="margin-right: 0.5rem;"></i>Search
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="moviesTable">
+                    <!-- Rows will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="paginationContainer" style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+        <!-- Will be populated by JavaScript -->
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" style="display: none; position: fixed; bottom: 2rem; right: 2rem; background: #4caf50; color: white; padding: 1rem 1.5rem; border-radius: 6px; box-shadow: 0 8px 16px rgba(76,175,80,0.3); animation: slideIn 0.3s ease;">
+        <i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>
+        <span id="successText">OTT link saved successfully!</span>
+    </div>
+</div>
+
+<style>
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+        background: rgba(229, 9, 20, 0.05);
+    }
+
+    tbody tr.hidden {
+        display: none;
+    }
+
+    input[type="text"], select {
+        padding: 0.6rem 0.8rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-family: inherit;
+    }
+
+    input[type="text"]:focus, select:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.1);
+    }
+
+    button.save-btn {
+        padding: 0.6rem 1.2rem;
+        background: linear-gradient(135deg, var(--accent-primary), #ff1744);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+
+    button.save-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
+    }
+
+    button.save-btn:active {
+        transform: translateY(0);
+    }
+
+    .pagination-btn {
+        padding: 0.6rem 1rem;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 600;
+    }
+
+    .pagination-btn:hover {
+        background: rgba(229, 9, 20, 0.1);
+        border-color: var(--accent-primary);
+    }
+
+    .pagination-btn.active {
+        background: var(--accent-primary);
+        color: white;
+        border-color: var(--accent-primary);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+
+<script>
+    let allMovies = [];
+    let filteredMovies = [];
+    let currentPage = 1;
+    const itemsPerPage = 25;
+
+    // Load movies on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMovies();
+    });
+
+    // Load movies from server
+    function loadMovies() {
+        fetch('/api/movies-without-ott')
+            .then(response => response.json())
+            .then(data => {
+                allMovies = data.movies;
+                filteredMovies = [...allMovies];
+                currentPage = 1;
+                console.log('Loaded movies:', allMovies.length, allMovies.slice(0, 3)); // Debug log
+                
+                if (allMovies.length === 0) {
+                    alert('⚠️  No movies without OTT links found in database!\n\nThis could mean:\n1. All movies already have OTT links added\n2. Database might be empty\n\nCheck the database directly.');
+                    document.getElementById('moviesTable').innerHTML = '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No movies found without OTT links</td></tr>';
+                    return;
+                }
+                
+                renderTable();
+                updateMovieCount();
+            })
+            .catch(err => {
+                console.error('Error loading movies:', err);
+                alert('❌ Error loading movies: ' + err.message);
+            });
+    }
+
+    // Apply filters
+    function applyFilters() {
+        const language = document.getElementById('languageFilter').value;
+        const year = document.getElementById('yearFilter').value;
+
+        console.log('Filtering with language:', language, 'year:', year); // Debug log
+
+        filteredMovies = allMovies.filter(movie => {
+            const langMatch = !language || movie.language === language || (movie.language && movie.language.toLowerCase() === language.toLowerCase());
+            const yearMatch = !year || (movie.release_date && movie.release_date.startsWith(year));
+            
+            if (language || year) {
+                console.log(`Movie: ${movie.title}, Lang: ${movie.language}, Year: ${movie.release_date}, Match: ${langMatch && yearMatch}`);
+            }
+            
+            return langMatch && yearMatch;
+        });
+
+        console.log('Filtered result count:', filteredMovies.length); // Debug log
+        
+        if (filteredMovies.length === 0 && (language || year)) {
+            alert(`⚠️ No movies found matching:\n- Language: ${language || 'All'}\n- Year: ${year || 'All'}\n\nTry clearing filters or check if movies have language/year set.`);
+        }
+
+        currentPage = 1;
+        renderTable();
+        updateMovieCount();
+    }
+
+    // Render table
+    function renderTable() {
+        const tbody = document.getElementById('moviesTable');
+        tbody.innerHTML = '';
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageMovies = filteredMovies.slice(start, end);
+
+        if (pageMovies.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="padding: 3rem 2rem; text-align: center;">
+                        <div style="color: var(--text-secondary);">
+                            <i class="fas fa-inbox" style="font-size: 2rem; display: block; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p style="margin: 0;">No movies found</p>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Try adjusting your filters or clearing them to see all movies</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        pageMovies.forEach((movie, index) => {
+            const row = document.createElement('tr');
+            row.id = `movie-${movie.id}`;
+            
+            const releaseYear = movie.release_date ? movie.release_date.substring(0, 4) : 'N/A';
+            const langName = getLanguageName(movie.language);
+
+            row.innerHTML = `
+                <td style="padding: 1rem 1.2rem; color: var(--text-primary); font-weight: 500;">
+                    ${movie.title}
+                </td>
+                <td style="padding: 1rem 1.2rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                    ${releaseYear}
+                </td>
+                <td style="padding: 1rem 1.2rem; text-align: center;">
+                    <span style="display: inline-block; padding: 0.4rem 0.8rem; background: rgba(76, 175, 80, 0.15); color: #4caf50; border-radius: 4px; font-size: 0.85rem; font-weight: 600;">
+                        ${langName}
+                    </span>
+                </td>
+                <td style="padding: 1rem 1.2rem; text-align: center;">
+                    <button onclick="openSearchModal('${movie.id}', '${movie.title}', '${releaseYear}')" title="Search on Google" style="padding: 0.6rem 1rem; background: rgba(66, 133, 244, 0.2); color: #4285f4; border: 1px solid #4285f4; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; font-size: 0.85rem;" onmouseover="this.style.background='rgba(66,133,244,0.35)'" onmouseout="this.style.background='rgba(66,133,244,0.2)'">
+                        <i class="fas fa-search" style="margin-right: 0.4rem;"></i>Search
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        });
+
+        renderPagination();
+    }
+
+    // Save OTT entry
+    function saveOttEntry(movieId, movieTitle) {
+        const platformSelect = document.querySelector(`.platform-select[data-movie-id="${movieId}"]`);
+        const ottLinkInput = document.querySelector(`.ott-link-input[data-movie-id="${movieId}"]`);
+
+        const platform = platformSelect.value;
+        const ottLink = ottLinkInput.value.trim();
+
+        if (!platform) {
+            alert('Please select a platform');
+            return;
+        }
+
+        if (!ottLink) {
+            alert('Please enter an OTT link');
+            return;
+        }
+
+        // Send to server
+        fetch('/api/save-ott-entry', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                movie_id: movieId,
+                platform: platform,
+                ott_link: ottLink
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Hide the row
+                const row = document.getElementById(`movie-${movieId}`);
+                row.style.opacity = '0';
+                row.style.transition = 'all 0.3s ease';
+                
+                setTimeout(() => {
+                    row.remove();
+                    updateMovieCount();
+                    // Re-render pagination if needed
+                    if (document.getElementById('moviesTable').children.length === 0) {
+                        currentPage = Math.max(1, currentPage - 1);
+                        renderTable();
+                    }
+                }, 300);
+
+                // Show success message
+                showSuccessMessage(`${movieTitle} - ${platform} link saved!`);
+
+                // Remove from allMovies
+                allMovies = allMovies.filter(m => m.id != movieId);
+                filteredMovies = filteredMovies.filter(m => m.id != movieId);
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            alert('Error saving OTT entry');
+        });
+    }
+
+    // Show success message
+    function showSuccessMessage(text) {
+        const msg = document.getElementById('successMessage');
+        document.getElementById('successText').textContent = text;
+        msg.style.display = 'block';
+        
+        setTimeout(() => {
+            msg.style.display = 'none';
+        }, 3000);
+    }
+
+    // Render pagination
+    function renderPagination() {
+        const container = document.getElementById('paginationContainer');
+        container.innerHTML = '';
+
+        const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
+
+        if (totalPages <= 1) return;
+
+        // Previous button
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'pagination-btn';
+        prevBtn.textContent = '← Previous';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+        container.appendChild(prevBtn);
+
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'pagination-btn' + (i === currentPage ? ' active' : '');
+            btn.textContent = i;
+            btn.onclick = () => {
+                currentPage = i;
+                renderTable();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+            container.appendChild(btn);
+        }
+
+        // Next button
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'pagination-btn';
+        nextBtn.textContent = 'Next →';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+        container.appendChild(nextBtn);
+    }
+
+    // Update movie count
+    function updateMovieCount() {
+        document.getElementById('movieCount').textContent = filteredMovies.length;
+    }
+
+    // Quick search on Google with modal to select platform
+    function openSearchModal(movieId, movieTitle, releaseYear) {
+        const platforms = ['Netflix', 'Prime', 'Hotstar', 'ZEE5', 'SonyLIV', 'JioCinema', 'SunNXT', 'Any'];
+        
+        let buttons = platforms.map(platform => 
+            `<button onclick="performGoogleSearch('${movieTitle}', '${releaseYear}', '${platform}')" style="padding: 0.6rem 1.2rem; margin: 0.5rem; background: linear-gradient(135deg, var(--accent-primary), #ff1744); color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-size: 0.95rem;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                ${platform}
+            </button>`
+        ).join('');
+        
+        alert(`Search for: ${movieTitle} (${releaseYear})\n\nClick a button to search or press ESC to close\n\n${platforms.join(' | ')}`);
+        
+        // Simpler approach - show prompt
+        const platform = prompt(`Search "${movieTitle}" on which platform?\n\nNetflix, Prime, Hotstar, ZEE5, SonyLIV, JioCinema, SunNXT, or leave blank for general search`, 'Netflix');
+        
+        if (platform !== null) {
+            performGoogleSearch(movieTitle, releaseYear, platform || 'Any');
+        }
+    }
+
+    // Perform Google search and open link
+    function performGoogleSearch(movieTitle, releaseYear, platform) {
+        let searchQuery = `${movieTitle} ${releaseYear}`;
+        
+        if (platform !== 'Any') {
+            searchQuery += ` ${platform}`;
+        }
+        
+        const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+        window.open(googleSearchUrl, '_blank');
+    }
+
+    // Check database diagnostics
+    function checkDatabase() {
+        fetch('/api/ott-diagnostics')
+            .then(response => response.json())
+            .then(data => {
+                const langStr = Object.entries(data.language_distribution)
+                    .map(([lang, count]) => `${getLanguageName(lang)}: ${count}`)
+                    .join('\n  ');
+                
+                const yearStr = Object.entries(data.year_distribution)
+                    .slice(0, 10) // Show top 10 years
+                    .map(([year, count]) => `${year}: ${count}`)
+                    .join('\n  ');
+
+                const message = `📊 DATABASE DIAGNOSTICS\n\n` +
+                    `Total Movies: ${data.total_movies}\n` +
+                    `With OTT Links: ${data.with_ott}\n` +
+                    `Without OTT Links: ${data.without_ott}\n\n` +
+                    `📢 LANGUAGE DISTRIBUTION (Movies without OTT):\n  ${langStr || 'No data'}\n\n` +
+                    `📅 YEAR DISTRIBUTION (Top Years, Movies without OTT):\n  ${yearStr || 'No data'}`;
+                
+                alert(message);
+            })
+            .catch(err => alert('Error: ' + err));
+    }
+
+    // Clear all filters
+    function clearFilters() {
+        document.getElementById('languageFilter').value = '';
+        document.getElementById('yearFilter').value = '';
+        filteredMovies = [...allMovies];
+        currentPage = 1;
+        renderTable();
+        updateMovieCount();
+    }
+</script>
+
+{% endblock %}

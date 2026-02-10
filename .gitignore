@@ -22,11 +22,16 @@ instance/
 *.db-journal
 *.sqlite
 *.sqlite3
+# ott_tracker.db
 
 # Backups & Exports
 exports/
 backups/
 *.json.bak
+
+# Local data/state files
+*.json
+!PROJECT_MANIFEST.md
 
 # Trash
 _trash/

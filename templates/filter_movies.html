@@ -61,10 +61,7 @@
                     <i class="fas fa-star"></i>
                     Top Rated
                 </a>
-                <a href="?free_only=on" class="filter-chip {% if applied_filters.free_only %}filter-chip-active{% endif %}">
-                    <i class="fas fa-gift"></i>
-                    Free Only
-                </a>
+                <!-- Removed YouTube Only filter chip -->
             </div>
         </div>
 
@@ -134,10 +131,7 @@
 
                 <!-- Checkboxes -->
                 <div class="filter-section-sidebar checkbox-group">
-                    <label class="filter-checkbox-sidebar">
-                        <input type="checkbox" name="free_only" value="on" {% if applied_filters.free_only %}checked{% endif %}>
-                        <span>Free Only</span>
-                    </label>
+                    <!-- Removed YouTube Only sidebar checkbox -->
                     <label class="filter-checkbox-sidebar">
                         <input type="checkbox" name="dubbed" value="on" {% if applied_filters.dubbed_only %}checked{% endif %}>
                         <span>Dubbed</span>
@@ -160,6 +154,18 @@
 
         <!-- Main Content Area -->
         <main class="discover-main">
+            {% if request.args.get('q') and movies %}
+                <div class="search-results-summary" style="margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.2rem; color: var(--accent-primary); margin-bottom: 0.5rem;">Search Results for "{{ request.args.get('q') }}"</h2>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.7rem;">
+                        {% for movie in movies %}
+                        <li style="background: var(--bg-card); border-radius: 6px; padding: 0.5rem 1rem; font-weight: 500; color: var(--text-primary);">
+                            {{ movie.title }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
             {% if movies %}
                 <!-- Movie Grid -->
                 <div class="movie-grid">

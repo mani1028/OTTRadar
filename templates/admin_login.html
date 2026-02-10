@@ -28,6 +28,13 @@
 
             <form method="POST" style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Username (Optional)</label>
+                    <input type="text" name="username" placeholder="admin" value="admin"
+                           style="width: 100%; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 1rem;">
+                    <small style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem; display: block;">Used for audit logging only</small>
+                </div>
+
+                <div>
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Password</label>
                     <input type="password" name="password" required autofocus
                            style="width: 100%; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 1rem;">

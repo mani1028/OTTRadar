@@ -20,6 +20,24 @@
         </p>
     </div>
 
+    <!-- Watchlist Recovery CTA -->
+    <div style="margin-bottom: 2rem; padding: 1.25rem 1.5rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;">
+        <div style="flex: 1; min-width: 220px;">
+            <h3 style="margin: 0 0 0.25rem 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-shield-alt" style="color: var(--accent-primary);"></i>
+                Save My Watchlist
+            </h3>
+            <p style="margin: 0; color: var(--text-secondary); font-size: 0.95rem;">Link your email to protect your watchlist if cookies are cleared.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+            <input id="watchlist-email" type="email" placeholder="you@example.com" style="padding: 0.65rem 0.9rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-primary); min-width: 220px;">
+            <button type="button" onclick="linkWatchlistEmail()" style="padding: 0.65rem 1.1rem; background: var(--accent-primary); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                <i class="fas fa-paper-plane"></i> Send Link
+            </button>
+        </div>
+        <div id="watchlist-link-status" style="width: 100%; font-size: 0.9rem; color: var(--text-secondary);"></div>
+    </div>
+
     <!-- Status Filter Tabs -->
     <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
         <a href="{{ url_for('watchlist', status='') }}" style="padding: 0.75rem 1.5rem; background: {% if not status or status == '' %}var(--accent-primary){% else %}var(--bg-card){% endif %}; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; border: 1px solid {% if not status or status == '' %}var(--accent-primary){% else %}var(--text-secondary){% endif %}; transition: all 0.3s;">
@@ -114,10 +132,47 @@
         <p style="color: var(--text-muted); margin: 0 0 2rem 0;">Start adding movies to keep track of what you want to watch</p>
         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <a href="{{ url_for('filter_movies') }}" style="padding: 0.75rem 1.5rem; background: var(--accent-primary); color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Browse Movies</a>
-            <a href="{{ url_for('free_movies') }}" style="padding: 0.75rem 1.5rem; background: var(--bg-card); color: white; text-decoration: none; border-radius: 6px; font-weight: 600; border: 1px solid var(--border-color);">Free Movies</a>
+            <a href="{{ url_for('filter_movies') }}" style="padding: 0.75rem 1.5rem; background: var(--bg-card); color: white; text-decoration: none; border-radius: 6px; font-weight: 600; border: 1px solid var(--border-color);">YouTube Movies</a>
             <a href="{{ url_for('trending') }}" style="padding: 0.75rem 1.5rem; background: var(--bg-card); color: white; text-decoration: none; border-radius: 6px; font-weight: 600; border: 1px solid var(--border-color);">Trending</a>
         </div>
     </div>
     {% endif %}
 </div>
+
+<script>
+function linkWatchlistEmail() {
+    const emailInput = document.getElementById('watchlist-email');
+    const statusEl = document.getElementById('watchlist-link-status');
+    const email = emailInput ? emailInput.value.trim() : '';
+
+    if (!email) {
+        statusEl.textContent = 'Please enter a valid email address.';
+        statusEl.style.color = '#e50914';
+        return;
+    }
+
+    statusEl.textContent = 'Sending verification link...';
+    statusEl.style.color = 'var(--text-secondary)';
+
+    fetch('/watchlist/link-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            statusEl.textContent = `Verification link sent to ${data.email}. Check your inbox.`;
+            statusEl.style.color = '#4caf50';
+        } else {
+            statusEl.textContent = data.error || 'Unable to link email.';
+            statusEl.style.color = '#e50914';
+        }
+    })
+    .catch(err => {
+        statusEl.textContent = `Request failed: ${err.message}`;
+        statusEl.style.color = '#e50914';
+    });
+}
+</script>
 {% endblock %}

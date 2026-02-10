@@ -1,0 +1,415 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Operations - OTT RADAR{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="admin-section">
+        <div class="section-head">
+            <div>
+                <h2><i class="fas fa-robot"></i> Operations</h2>
+                <p class="section-desc">Run automations, check execution history, and review logs.</p>
+            </div>
+            <a href="/admin/scripts-guide" class="text-link" target="_blank">
+                <i class="fas fa-book"></i> View Scripts Guide
+            </a>
+        </div>
+
+        <div class="automation-grid">
+            <div class="automation-card">
+                <div class="card-icon"><i class="fas fa-database"></i></div>
+                <div class="script-header">
+                    <h3>TMDB Enrichment</h3>
+                    <span class="badge-success">Unlimited</span>
+                </div>
+                <p>Fill missing metadata, trailers, ratings, cast, and OTT platforms from TMDB.</p>
+                <button class="automation-btn" onclick="runScript('enrich_metadata_trailers')">
+                    <i class="fas fa-play"></i> Run TMDB Enrichment
+                </button>
+            </div>
+
+            <div class="automation-card">
+                <div class="card-icon"><i class="fas fa-plug"></i></div>
+                <div class="script-header">
+                    <h3>OMDb Gap Fill</h3>
+                    <span class="badge-warn">Limit 1000/day</span>
+                </div>
+                <p>Smart gap-filling for fields TMDB does not provide.</p>
+                <button class="automation-btn" onclick="runScript('smart_omdb_enrichment')">
+                    <i class="fas fa-play"></i> Fill Gaps
+                </button>
+            </div>
+
+            <div class="automation-card">
+                <div class="card-icon"><i class="fas fa-search"></i></div>
+                <h3>Find Missing Movies</h3>
+                <p>Discover popular TMDB titles not yet in your database.</p>
+                <button class="automation-btn" onclick="runScript('track_missing_movies')">
+                    <i class="fas fa-play"></i> Find Missing
+                </button>
+            </div>
+
+            <div class="automation-card">
+                <div class="card-icon"><i class="fas fa-download"></i></div>
+                <h3>Import New Movies</h3>
+                <p>Import movies from missing_movies.json and auto-enrich.</p>
+                <button class="automation-btn" onclick="runScript('discover_new_movies')">
+                    <i class="fas fa-play"></i> Import Now
+                </button>
+            </div>
+
+            <div class="automation-card">
+                <div class="card-icon"><i class="fas fa-tv"></i></div>
+                <h3>Refresh OTT Links</h3>
+                <p>Update OTT availability and link health across all movies.</p>
+                <button class="automation-btn" onclick="runScript('daily_ott_checker')">
+                    <i class="fas fa-play"></i> Refresh OTT
+                </button>
+            </div>
+
+            <div class="automation-card">
+                <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
+                <h3>OTT Coverage Report</h3>
+                <p>Generate platform distribution stats and dead link report.</p>
+                <button class="automation-btn" onclick="runScript('manage_ott_links_report')">
+                    <i class="fas fa-chart-bar"></i> Generate Report
+                </button>
+            </div>
+
+            <div class="automation-card">
+                <div class="card-icon"><i class="fas fa-file-export"></i></div>
+                <h3>Export Database</h3>
+                <p>Create timestamped JSON backup in exports/ folder.</p>
+                <button class="automation-btn" onclick="runScript('export_db')">
+                    <i class="fas fa-download"></i> Export Now
+                </button>
+            </div>
+
+            <div class="automation-card">
+                <div class="card-icon"><i class="fas fa-list-check"></i></div>
+                <h3>Missing Fields Report</h3>
+                <p>Generate missing data summary for all tracked fields.</p>
+                <button class="automation-btn" onclick="runScript('complete_enrichment')">
+                    <i class="fas fa-clipboard-check"></i> Check Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <div class="section-head">
+            <h2><i class="fas fa-history"></i> Recent Executions</h2>
+        </div>
+        {% if recent_scripts %}
+        <div class="execution-history">
+            {% for exec in recent_scripts %}
+            <div class="execution-item status-{{ exec.status }}">
+                <div class="exec-name">{{ exec.script_name }}</div>
+                <div class="exec-status">
+                    {% if exec.status == 'success' %}
+                        <i class="fas fa-check-circle"></i> Success
+                    {% elif exec.status == 'failed' %}
+                        <i class="fas fa-times-circle"></i> Failed
+                    {% elif exec.status == 'running' %}
+                        <i class="fas fa-sync fa-spin"></i> Running
+                    {% endif %}
+                </div>
+                <div class="exec-time">{{ exec.started_at.strftime('%b %d, %I:%M %p') }}</div>
+                <div class="exec-duration">{% if exec.duration_seconds %}{{ exec.duration_seconds }}s{% endif %}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">No executions yet</p>
+        {% endif %}
+    </div>
+
+    <div class="admin-section">
+        <div class="section-head">
+            <h2><i class="fas fa-inbox"></i> User Submissions</h2>
+        </div>
+        {% if submissions %}
+        <div class="submissions-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Movie Title</th>
+                        <th>Type</th>
+                        <th>Platform</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td class="title-col">
+                            <strong>{{ submission.movie_title }}</strong>
+                            {% if submission.comment %}
+                            <br><small>{{ submission.comment[:50] }}{% if submission.comment|length > 50 %}...{% endif %}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ submission.submission_type }}">
+                                {{ submission.submission_type|title }}
+                            </span>
+                        </td>
+                        <td>{{ submission.platform_name or '—' }}</td>
+                        <td>
+                            <span class="badge badge-{{ submission.status }}">
+                                {{ submission.status|title }}
+                            </span>
+                        </td>
+                        <td>{{ submission.created_at.strftime('%b %d, %Y') }}</td>
+                        <td class="actions-col">
+                            {% if submission.status == 'pending' %}
+                            <form method="POST" action="{{ url_for('admin_submission_update', id=submission.id) }}" style="display: inline;">
+                                <button type="submit" name="action" value="approve" class="action-btn approve">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin_submission_update', id=submission.id) }}" style="display: inline;">
+                                <button type="submit" name="action" value="reject" class="action-btn reject">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No submissions yet</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="admin-section">
+        <div class="section-head">
+            <h2><i class="fas fa-terminal"></i> Live Log Viewer</h2>
+        </div>
+        <div class="log-controls">
+            <button class="log-btn" onclick="loadLogs(50)"><i class="fas fa-sync"></i> Refresh (50)</button>
+            <button class="log-btn" onclick="loadLogs(100)">Load 100 Lines</button>
+            <button class="log-btn" onclick="loadLogs(500)">Load 500 Lines</button>
+            <button class="log-btn" onclick="clearLogView()"><i class="fas fa-eraser"></i> Clear View</button>
+        </div>
+        <div class="log-viewer" id="log-viewer">
+            <pre id="log-content">Click "Refresh" to load logs...</pre>
+        </div>
+    </div>
+</div>
+
+<div id="script-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3><i class="fas fa-sync fa-spin"></i> Running Script</h3>
+        <p id="script-status">Executing...</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<script>
+function runScript(scriptName) {
+    const modal = document.getElementById('script-modal');
+    const statusText = document.getElementById('script-status');
+
+    modal.style.display = 'flex';
+    statusText.textContent = `Starting ${scriptName}...`;
+
+    fetch('/admin/api/script/run', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({script_name: scriptName})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            statusText.textContent = `Script started! Execution ID: ${data.execution_id}`;
+            checkScriptStatus(data.execution_id);
+        } else {
+            statusText.textContent = `Error: ${data.error}`;
+        }
+    })
+    .catch(err => {
+        statusText.textContent = `Error: ${err.message}`;
+    });
+}
+
+function checkScriptStatus(executionId) {
+    const statusText = document.getElementById('script-status');
+
+    const interval = setInterval(() => {
+        fetch(`/admin/api/script/status/${executionId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'running') {
+                statusText.textContent = `Running ${data.script_name}...`;
+            } else if (data.status === 'success') {
+                statusText.textContent = `Completed in ${data.duration_seconds}s`;
+                clearInterval(interval);
+                setTimeout(() => location.reload(), 2000);
+            } else if (data.status === 'failed') {
+                statusText.textContent = `Failed: ${data.error_message}`;
+                clearInterval(interval);
+            }
+        });
+    }, 3000);
+}
+
+function closeModal() {
+    document.getElementById('script-modal').style.display = 'none';
+}
+
+function loadLogs(lines = 100) {
+    const logContent = document.getElementById('log-content');
+    logContent.textContent = 'Loading logs...';
+
+    fetch(`/admin/api/logs/tail?lines=${lines}`)
+    .then(res => res.json())
+    .then(data => {
+        logContent.textContent = data.logs || 'No logs found';
+        const logViewer = document.getElementById('log-viewer');
+        logViewer.scrollTop = logViewer.scrollHeight;
+    })
+    .catch(err => {
+        logContent.textContent = `Error loading logs: ${err.message}`;
+    });
+}
+
+function clearLogView() {
+    document.getElementById('log-content').textContent = 'Logs cleared. Click "Refresh" to reload.';
+}
+</script>
+
+<style>
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.automation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.automation-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.automation-card .card-icon {
+    font-size: 2.2rem;
+    color: var(--accent-primary);
+    margin-bottom: 0.8rem;
+}
+
+.automation-btn {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.automation-btn:hover {
+    background: var(--accent-hover);
+}
+
+.execution-history {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.execution-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.log-controls {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.log-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.log-viewer {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    max-height: 400px;
+    overflow: auto;
+}
+
+.log-viewer pre {
+    white-space: pre-wrap;
+    font-size: 0.85rem;
+}
+
+.text-link {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.script-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.badge-success {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    padding: 0.2rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.badge-warn {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+</style>
+{% endblock %}

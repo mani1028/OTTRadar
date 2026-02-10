@@ -1,0 +1,238 @@
+{# OTT Watch Links Template Snippet #}
+{# Add this to your movie detail pages #}
+
+{# === WATCH NOW BUTTONS === #}
+<div class="ott-watch-section">
+  <h3>📺 Where to Watch</h3>
+  
+  {% if ott_links %}
+    <div class="watch-links-grid">
+      {% for platform in platforms %}
+        <div class="platform-card">
+          <img src="{{ platform.logo }}" alt="{{ platform.name }} logo" class="ott-logo">
+          {% if platform.direct_link %}
+            <a href="{{ platform.direct_link }}" class="btn btn-watch" target="_blank">
+              Watch on {{ platform.name }}
+            </a>
+          {% else %}
+            <a href="https://www.google.com/search?q={{ movie.title|urlencode }}+watch+on+{{ platform.name|urlencode }}" 
+               class="btn btn-search" 
+               target="_blank">
+              Search on {{ platform.name }}
+            </a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    
+    <p class="ott-note">
+      <small>🔍 Search links may take you to platform's search results. 
+      Direct links (when available) go straight to the movie page.</small>
+    </p>
+  
+  {% else %}
+    <div class="no-ott-message">
+      <p>Not currently available on any streaming platform.</p>
+      <button class="btn btn-secondary" onclick="suggestMovie()">Suggest a Platform</button>
+    </div>
+  {% endif %}
+</div>
+
+
+{# === CSS STYLING === #}
+<style>
+.ott-watch-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+  border-radius: 8px;
+  border-left: 4px solid var(--accent-primary);
+}
+
+.ott-watch-section h3 {
+  margin-top: 0;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.watch-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.watch-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+/* Platform-specific colors */
+.watch-btn-netflix {
+  background: linear-gradient(135deg, #E50914 0%, #831010 100%);
+}
+
+.watch-btn-prime, .watch-btn-amazon {
+  background: linear-gradient(135deg, #146EB4 0%, #0A3D62 100%);
+}
+
+.watch-btn-hotstar, .watch-btn-disney {
+  background: linear-gradient(135deg, #1F1F3D 0%, #0D47A1 100%);
+}
+
+.watch-btn-jiocinema {
+  background: linear-gradient(135deg, #5B21B6 0%, #3730A3 100%);
+}
+
+.watch-btn-zee5 {
+  background: linear-gradient(135deg, #1C1C33 0%, #6B21A8 100%);
+}
+
+.watch-btn-sony_liv {
+  background: linear-gradient(135deg, #008ECF 0%, #005A87 100%);
+}
+
+.watch-btn-apple {
+  background: linear-gradient(135deg, #555555 0%, #000000 100%);
+}
+
+/* Hover effect */
+.watch-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.watch-btn-search:hover {
+  opacity: 0.85;
+}
+
+.platform-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.platform-icon {
+  font-size: 2rem;
+}
+
+.platform-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.search-badge {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+}
+
+.ott-note {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.no-ott-message {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .watch-links-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  
+  .watch-btn {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .platform-logo {
+    width: 32px;
+    height: 32px;
+  }
+}
+</style>
+
+
+{# === FLASK TEMPLATE INTEGRATION === #}
+{# In your movie.html template: #}
+
+{# 
+{% block content %}
+  <div class="movie-container">
+    
+    {# Movie details (poster, rating, etc.) #}
+    
+    {# OTT Watch Links #}
+    {% if movie.get_ott_links %}
+      {% set ott_links = movie.get_ott_links() %}
+      {% include 'components/ott_watch_links.html' %}
+    {% endif %}
+    
+    {# Other content #}
+  </div>
+{% endblock %}
+#}
+
+
+{# === API RESPONSE EXAMPLE === #}
+{# GET /api/movie/123#}
+
+{# Response: #}
+{# 
+{
+  "movie_id": 123,
+  "title": "Bahubali 2",
+  "poster": "https://...",
+  "watch": {
+    "movie_id": 123,
+    "title": "Bahubali 2",
+    "available_on": 3,
+    "platforms": [
+      {
+        "platform": "netflix",
+        "url": "https://www.netflix.com/search?q=Bahubali+2",
+        "link_type": "search",
+        "provider_name": "Netflix",
+        "logo": "https://image.tmdb.org/..."
+      },
+      {
+        "platform": "hotstar",
+        "url": "https://direct.link.if.available.else.search",
+        "link_type": "direct",
+        "provider_name": "Disney+ Hotstar",
+        "logo": "https://image.tmdb.org/..."
+      }
+    ],
+    "primary_links": [
+      {
+        "platform": "netflix",
+        ...
+      }
+    ]
+  }
+}
+#}

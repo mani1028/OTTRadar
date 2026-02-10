@@ -1,0 +1,221 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Price Drops for Marketing - Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 1rem;">
+    <!-- Page Header -->
+    <div style="margin-bottom: 2rem; border-bottom: 1px solid #333; padding-bottom: 1rem;">
+        <h1 style="margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 1rem;">
+            <i class="fas fa-chart-line" style="color: #ff6b6b;"></i> Price Drops
+        </h1>
+        <p style="color: var(--text-secondary); margin: 0;">Detected price drops ready for Twitter/Telegram marketing</p>
+    </div>
+
+    <!-- Marketing Guide -->
+    <div style="background: linear-gradient(135deg, rgba(255,107,107,0.1), rgba(255,193,7,0.1)); border: 1px solid #ff6b6b; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 style="margin: 0 0 0.5rem 0; color: #ff6b6b;">
+            <i class="fas fa-lightbulb"></i> Viral Marketing Opportunity
+        </h3>
+        <p style="margin: 0; color: var(--text-secondary); font-size: 0.95rem;">
+            Post price drops on Twitter (X) and Telegram deal channels. People love saving money!
+            These links pay commissions when users click through and watch or sign up.
+        </p>
+    </div>
+
+    {% if drops.items %}
+    <!-- Price Drops Table -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 2rem;">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: rgba(255,193,7,0.1); border-bottom: 1px solid var(--border);">
+                        <th style="padding: 1rem; text-align: left; font-weight: 600;">Movie</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600;">Platform</th>
+                        <th style="padding: 1rem; text-align: center; font-weight: 600;">Price Change</th>
+                        <th style="padding: 1rem; text-align: center; font-weight: 600;">Discount</th>
+                        <th style="padding: 1rem; text-align: center; font-weight: 600;">Detected</th>
+                        <th style="padding: 1rem; text-align: center; font-weight: 600;">Social Media</th>
+                        <th style="padding: 1rem; text-align: center; font-weight: 600;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for drop in drops.items %}
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 1rem; font-weight: 500;">
+                            {{ Movie.query.get(drop.movie_id).title }}
+                        </td>
+                        <td style="padding: 1rem;">
+                            {% if 'apple' in drop.platform %}
+                            <span style="padding: 0.4rem 0.8rem; background: rgba(162,170,173,0.2); border-radius: 4px; color: #A2AAAD; font-size: 0.85rem; font-weight: 600;">
+                                Apple TV+
+                            </span>
+                            {% else %}
+                            <span style="padding: 0.4rem 0.8rem; background: rgba(255,153,0,0.2); border-radius: 4px; color: #FF9900; font-size: 0.85rem; font-weight: 600;">
+                                Prime Video
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 1rem; text-align: center;">
+                            <code style="background: var(--bg-body); padding: 0.3rem 0.6rem; border-radius: 3px; font-size: 0.85rem;">
+                                {{ drop.currency }}{{ "%.2f"|format(drop.previous_price) }} → {{ "%.2f"|format(drop.current_price) }}
+                            </code>
+                        </td>
+                        <td style="padding: 1rem; text-align: center;">
+                            <strong style="color: #4caf50; font-size: 1.1rem;">
+                                -{{ "%.0f"|format(drop.discount_percentage) }}%
+                            </strong>
+                        </td>
+                        <td style="padding: 1rem; text-align: center; font-size: 0.85rem; color: var(--text-secondary);">
+                            {{ drop.detected_at.strftime('%Y-%m-%d %H:%M') }}
+                        </td>
+                        <td style="padding: 1rem; text-align: center;">
+                            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                                {% if drop.posted_to_twitter %}
+                                <span style="padding: 0.3rem 0.6rem; background: rgba(29,161,242,0.2); border-radius: 3px; font-size: 0.8rem; color: #1DA1F2;">
+                                    <i class="fab fa-twitter"></i> Posted
+                                </span>
+                                {% else %}
+                                <span style="padding: 0.3rem 0.6rem; background: rgba(100,100,100,0.2); border-radius: 3px; font-size: 0.8rem; color: var(--text-secondary);">
+                                    <i class="fab fa-twitter"></i> Pending
+                                </span>
+                                {% endif %}
+
+                                {% if drop.posted_to_telegram %}
+                                <span style="padding: 0.3rem 0.6rem; background: rgba(0,136,204,0.2); border-radius: 3px; font-size: 0.8rem; color: #0088CC;">
+                                    <i class="fab fa-telegram"></i> Posted
+                                </span>
+                                {% end if %}
+                            </div>
+                        </td>
+                        <td style="padding: 1rem; text-align: center;">
+                            <button class="generate-tweet-btn" data-drop-id="{{ drop.id }}" 
+                                    style="padding: 0.5rem 0.8rem; background: #1DA1F2; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s;"
+                                    onmouseover="this.style.background='#1a91da'" onmouseout="this.style.background='#1DA1F2'">
+                                <i class="fab fa-twitter"></i> Generate
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if drops.pages > 1 %}
+    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+        {% if drops.has_prev %}
+        <a href="{{ url_for('admin.admin_affiliate_price_drops', page=drops.prev_num) }}" 
+           style="padding: 0.6rem 1rem; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--text-primary); transition: all 0.3s;"
+           onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+            ← Previous
+        </a>
+        {% endif %}
+
+        {% for page_num in drops.iter_pages() %}
+            {% if page_num %}
+                {% if page_num == drops.page %}
+                <span style="padding: 0.6rem 1rem; background: var(--accent-primary); color: white; border-radius: 4px; font-weight: 600;">
+                    {{ page_num }}
+                </span>
+                {% else %}
+                <a href="{{ url_for('admin.admin_affiliate_price_drops', page=page_num) }}"
+                   style="padding: 0.6rem 1rem; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--text-primary); transition: all 0.3s;"
+                   onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    {{ page_num }}
+                </a>
+                {% endif %}
+            {% else %}
+            <span style="color: var(--text-secondary);">...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if drops.has_next %}
+        <a href="{{ url_for('admin.admin_affiliate_price_drops', page=drops.next_num) }}"
+           style="padding: 0.6rem 1rem; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--text-primary); transition: all 0.3s;"
+           onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+            Next →
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div style="text-align: center; padding: 3rem; background: var(--bg-card); border: 1px dashed var(--border); border-radius: 8px;">
+        <i class="fas fa-chart-line" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 1rem; display: block;"></i>
+        <h3 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">No Price Drops Detected</h3>
+        <p style="color: var(--text-secondary); margin: 0;">Price drops will appear here automatically as they're detected</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Twitter Post Modal -->
+<div id="twitter-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--bg-card); border-radius: 8px; padding: 2rem; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fab fa-twitter" style="color: #1DA1F2;"></i> Twitter Post
+            </h2>
+            <button onclick="closeTwitterModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">×</button>
+        </div>
+
+        <div id="tweet-content" style="background: var(--bg-body); border: 1px solid var(--border); padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; min-height: 100px;">
+            <p style="margin: 0; color: var(--text-secondary);">Loading tweet...</p>
+        </div>
+
+        <div id="tweet-stats" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="text-align: center;">
+                <small style="color: var(--text-secondary);">Characters</small>
+                <p id="char-count" style="margin: 0.25rem 0 0 0; font-weight: 600; font-size: 1.25rem;">0</p>
+            </div>
+            <div style="text-align: center;">
+                <small style="color: var(--text-secondary);">Discount</small>
+                <p id="discount-amount" style="margin: 0.25rem 0 0 0; font-weight: 600; font-size: 1.25rem; color: #4caf50;">0%</p>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="copyToClipboard()" style="flex: 1; padding: 0.8rem; background: var(--accent-primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                <i class="fas fa-copy"></i> Copy to Clipboard
+            </button>
+            <button onclick="closeTwitterModal()" style="flex: 1; padding: 0.8rem; background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.generate-tweet-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const dropId = this.dataset.dropId;
+        const response = await fetch(`{{ url_for('admin.admin_affiliate_generate_twitter', drop_id='DROPID') }}`.replace('DROPID', dropId));
+        const data = await response.json();
+        
+        document.getElementById('tweet-content').innerHTML = `<p style="margin: 0; white-space: pre-wrap; line-height: 1.5;">${data.tweet}</p>`;
+        document.getElementById('char-count').textContent = data.characters;
+        document.getElementById('discount-amount').textContent = data.discount;
+        
+        document.getElementById('twitter-modal').style.display = 'flex';
+        window.currentTweet = data.tweet;
+    });
+});
+
+function closeTwitterModal() {
+    document.getElementById('twitter-modal').style.display = 'none';
+}
+
+function copyToClipboard() {
+    navigator.clipboard.writeText(window.currentTweet).then(() => {
+        alert('Tweet copied to clipboard!');
+    });
+}
+
+// Close modal on background click
+document.getElementById('twitter-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeTwitterModal();
+});
+</script>
+{% endblock %}

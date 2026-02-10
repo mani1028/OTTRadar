@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}{{ series_name }} - OTT Tracker{% endblock %}
+
+{% block meta_title %}{{ series_name }} - Watch Online{% endblock %}
+{% block meta_description %}Watch {{ series_name }} online on Netflix, Prime Video, Hotstar & more. {% if series_info.rating %}Rating: {{ "%.1f"|format(series_info.rating) }}/10. {% endif %}{{ total_episodes }} episodes. Find where to stream.{% endblock %}
+{% block og_type %}video.tv_show{% endblock %}
+{% block og_title %}{{ series_name }}{% endblock %}
+{% block og_description %}Watch {{ series_name }} - {{ total_episodes }} episodes. {% if series_info.rating %}Rating: {{ "%.1f"|format(series_info.rating) }}/10. {% endif %}Streaming on multiple OTT platforms.{% endblock %}
+{% block og_image %}{{ series_info.poster or url_for('static', filename='images/og-image.jpg', _external=True) }}{% endblock %}
+{% block twitter_title %}{{ series_name }}{% endblock %}
+{% block twitter_description %}{{ total_episodes }} episodes. {% if series_info.rating %}Rating: {{ "%.1f"|format(series_info.rating) }}/10. {% endif %}Watch {{ series_name }} on Netflix, Prime Video, Hotstar & more.{% endblock %}
+{% block twitter_image %}{{ series_info.poster or url_for('static', filename='images/og-image.jpg', _external=True) }}{% endblock %}
+
+{% block schema_markup %}
+<!-- TV Series Schema Markup (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TVSeries",
+  "name": {{ series_name | tojson }},
+  {% if series_info.description %}"description": {{ series_info.description[:200] | tojson }},{% endif %}
+  {% if series_info.poster %}"image": {{ series_info.poster | tojson }},{% endif %}
+  "numberOfSeasons": {{ seasons|length }},
+  "numberOfEpisodes": {{ total_episodes }},
+  {% if series_info.rating %}"aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": {{ "%.1f"|format(series_info.rating) }},
+    "bestRating": 10,
+    "worstRating": 0,
+    "ratingCount": 500
+  },{% endif %}
+  "url": {{ request.url | tojson }}
+}
+</script>
+<!-- BreadcrumbList Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": {{ url_for('index', _external=True) | tojson }}
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "TV Series",
+      "item": {{ url_for('tv_series_list', _external=True) | tojson }}
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": {{ series_name | tojson }},
+      "item": {{ request.url | tojson }}
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 20px 16px 90px 16px;">
+    <!-- Series Header -->
+    <div style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border);">
+        <div style="display: grid; grid-template-columns: 150px 1fr; gap: 2rem; align-items: flex-start;">
+            <!-- Poster -->
+            {% if series_info.poster %}
+            <img src="{{ series_info.poster }}" alt="{{ series_name }}" style="width: 100%; border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+            {% endif %}
+            
+            <!-- Series Info -->
+            <div>
+                <h1 style="font-size: 2.2rem; margin: 0 0 0.5rem 0;">{{ series_name }}</h1>
+                
+                <!-- Info Chips -->
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                    <div style="padding: 0.6rem 1.2rem; background: rgba(0,188,212,0.15); border: 1px solid rgba(0,188,212,0.5); border-radius: 999px; font-size: 0.9rem; font-weight: 600;">
+                        <i class="fas fa-play-circle"></i> {{ total_episodes }} Episodes
+                    </div>
+                    
+                    {% if series_info.rating %}
+                    <div style="padding: 0.6rem 1.2rem; background: rgba(255,193,7,0.15); border: 1px solid rgba(255,193,7,0.5); border-radius: 999px; font-size: 0.9rem; font-weight: 600;">
+                        <i class="fas fa-star" style="color: #ffc107;"></i> {{ "%.1f"|format(series_info.rating) }}/10
+                    </div>
+                    {% endif %}
+                    
+                    {% if series_info.language %}
+                    <div style="padding: 0.6rem 1.2rem; background: rgba(33,150,243,0.15); border: 1px solid rgba(33,150,243,0.5); border-radius: 999px; font-size: 0.9rem; font-weight: 600;">
+                        <i class="fas fa-globe"></i> {{ series_info.language.upper() }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Navigation -->
+                <div style="display: flex; gap: 1rem;">
+                    <a href="{{ url_for('tv_series_list') }}" style="padding: 0.7rem 1.5rem; background: rgba(255,255,255,0.1); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--text-primary); font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                        <i class="fas fa-arrow-left" style="margin-right: 0.5rem;"></i> Back to Series
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Episodes by Season -->
+    {% for season_num in seasons|dictsort %}
+    <div style="margin-bottom: 3rem;">
+        <h2 style="font-size: 1.5rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-list" style="color: var(--accent-primary);"></i> Season {{ season_num[0] }}
+        </h2>
+        
+        <!-- Episodes Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.5rem;">
+            {% for episode in season_num[1] %}
+            <a href="{{ url_for('movie_detail', movie_identifier=episode.title|movie_slug) }}" style="text-decoration: none; color: inherit; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="position: relative; padding-bottom: 150%; overflow: hidden; border-radius: var(--radius-md); background: var(--bg-card); box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: box-shadow 0.3s ease;">
+                    {% if episode.poster %}
+                    <img src="{{ episode.poster }}" alt="E{{ episode.episode_number }}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+                    {% else %}
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--bg-card), rgba(255,255,255,0.1)); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-image" style="font-size: 2rem; color: var(--text-secondary);"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Episode Badge -->
+                    <div style="position: absolute; top: 0.5rem; left: 0.5rem; padding: 0.4rem 0.8rem; background: rgba(0,0,0,0.85); border-radius: 4px; font-weight: 700; font-size: 0.75rem; color: var(--accent-primary);">
+                        E{{ episode.episode_number }}
+                    </div>
+                </div>
+                
+                <div style="margin-top: 0.5rem;">
+                    <p style="margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--text-primary); line-height: 1.2;">Episode {{ episode.episode_number }}</p>
+                    <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">{{ episode.title }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- OTT Availability (from series_info) -->
+    {% if series_info.ott_platforms %}
+    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+        <h2 style="font-size: 1.3rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-tv" style="color: var(--accent-primary);"></i> Where to Watch
+        </h2>
+        
+        {% set ott_data = series_info.ott_platforms|safe %}
+        {% if ott_data and ott_data != '{}' %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+            {% for platform, info in ott_data.items() %}
+            {% if info and info.url %}
+            <a href="{{ info.url }}" target="_blank" rel="noopener noreferrer" style="padding: 1rem; background: rgba(255,255,255,0.08); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--text-primary); transition: all 0.3s ease; display: flex; align-items: center; gap: 1rem;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                {% if info.logo %}
+                <img src="{{ info.logo }}" alt="{{ platform }}" style="height: 32px; object-fit: contain;">
+                {% else %}
+                <span style="font-weight: 600; font-size: 1.2rem;">{{ platform[:1].upper() }}</span>
+                {% endif %}
+                <div>
+                    <p style="margin: 0; font-weight: 600; font-size: 0.95rem;">{{ platform }}</p>
+                    <p style="margin: 0.2rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">
+                        {% if info.rent %}
+                        <i class="fas fa-tag"></i> Rent
+                        {% elif info.buy %}
+                        <i class="fas fa-shopping-bag"></i> Buy
+                        {% else %}
+                        Available
+                        {% endif %}
+                    </p>
+                </div>
+            </a>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-secondary);">OTT details not available</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    @media (max-width: 768px) {
+        [style*="grid-template-columns: 150px"] {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
+{% endblock %}

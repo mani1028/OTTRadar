@@ -15,7 +15,8 @@ class Movie(db.Model):
     poster = db.Column(db.String(500))
     backdrop = db.Column(db.String(500))
     overview = db.Column(db.Text)
-    release_date = db.Column(db.String(10))  # YYYY-MM-DD format
+    release_date = db.Column(db.String(10))  # YYYY-MM-DD format (theatrical release)
+    ott_release_date = db.Column(db.String(10))  # YYYY-MM-DD format (OTT/streaming release)
     rating = db.Column(db.Float, default=0)
     language = db.Column(db.String(5), default='te')
     ott_platforms = db.Column(db.Text, default='{}')  # JSON format
@@ -37,6 +38,13 @@ class Movie(db.Model):
     last_verified = db.Column(db.DateTime, default=datetime.utcnow)  # Last metadata verification
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Series Support (for multi-part movies and TV shows)
+    media_type = db.Column(db.String(10), default='movie')  # 'movie' or 'tv'
+    series_name = db.Column(db.String(255))  # Base series name for grouping
+    season_number = db.Column(db.Integer)  # Season number
+    episode_number = db.Column(db.Integer)  # Episode or part number
+    episode_count = db.Column(db.Integer)  # Total episodes/parts
+    
     def to_dict(self):
         """Convert movie object to dictionary for API responses"""
         try:
@@ -52,6 +60,7 @@ class Movie(db.Model):
             'backdrop': self.backdrop,
             'overview': self.overview,
             'release_date': self.release_date,
+            'ott_release_date': self.ott_release_date,
             'rating': self.rating,
             'language': self.language,
             'ott_platforms': ott_data,
@@ -172,6 +181,48 @@ class Movie(db.Model):
             self.ott_platforms = json.dumps(platforms_dict)
         else:
             self.ott_platforms = str(platforms_dict)
+    
+    def get_ott_links(self):
+        """
+        Get OTT watchable links with fallback strategy:
+        1. If direct_url exists → use it
+        2. Else → use fallback_search_url (auto-generated)
+        
+        Returns:
+            list of dicts: [{
+                'platform': 'netflix',
+                'url': 'https://...',
+                'link_type': 'direct' or 'search',
+                'provider_name': 'Netflix',
+                'logo': 'https://...'
+            }]
+        """
+        ott_data = self.get_ott_platforms()
+        if not ott_data:
+            return []
+        
+        links = []
+        for platform, info in ott_data.items():
+            if not isinstance(info, dict):
+                continue
+            
+            # Prefer direct URL if available, fallback to search URL
+            url = info.get('direct_url') or info.get('url') or info.get('fallback_search_url')
+            
+            if not url:
+                continue
+            
+            link_type = 'direct' if info.get('direct_url') or info.get('url') else 'search'
+            
+            links.append({
+                'platform': platform,
+                'url': url,
+                'link_type': link_type,
+                'provider_name': info.get('provider_name', platform.title()),
+                'logo': info.get('logo_path'),
+            })
+        
+        return links
 
 
 class UserSubmission(db.Model):
@@ -275,3 +326,166 @@ class OTTSnapshot(db.Model):
     def __repr__(self):
         return f'<OTTSnapshot {self.date}>'
 
+
+class AuditLog(db.Model):
+    """Track all admin actions for accountability and debugging"""
+    __tablename__ = 'audit_log'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    admin_username = db.Column(db.String(100), nullable=False, index=True)
+    action_type = db.Column(db.String(50), nullable=False, index=True)  # 'movie_edit', 'bulk_update', 'script_run', etc.
+    target_type = db.Column(db.String(50))  # 'movie', 'person', 'submission', etc.
+    target_id = db.Column(db.Integer)  # ID of affected entity
+    description = db.Column(db.Text)  # Human-readable description
+    changes_json = db.Column(db.Text)  # JSON of changed fields (before/after)
+    ip_address = db.Column(db.String(50))
+    user_agent = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    
+    def get_changes(self):
+        """Get changes dict"""
+        try:
+            return json.loads(self.changes_json) if self.changes_json else {}
+        except:
+            return {}
+    
+    def set_changes(self, changes_dict):
+        """Set changes dict"""
+        if isinstance(changes_dict, dict):
+            self.changes_json = json.dumps(changes_dict)
+    
+    def __repr__(self):
+        return f'<AuditLog {self.admin_username}:{self.action_type}>'
+
+
+class ScriptExecution(db.Model):
+    """Track script executions triggered from admin panel"""
+    __tablename__ = 'script_execution'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    script_name = db.Column(db.String(100), nullable=False, index=True)
+    triggered_by = db.Column(db.String(100), nullable=False)  # Admin username
+    status = db.Column(db.String(20), default='running', index=True)  # 'running', 'success', 'failed', 'cancelled'
+    started_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    completed_at = db.Column(db.DateTime)
+    duration_seconds = db.Column(db.Integer)
+    output_log = db.Column(db.Text)  # Capture stdout/stderr
+    error_message = db.Column(db.Text)
+    success_count = db.Column(db.Integer, default=0)  # For scripts that process items
+    error_count = db.Column(db.Integer, default=0)
+    
+    def __repr__(self):
+        return f'<ScriptExecution {self.script_name}:{self.status}>'
+
+
+class Person(db.Model):
+    """Actor/Director/Crew person metadata"""
+    __tablename__ = 'person'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tmdb_id = db.Column(db.Integer, unique=True, index=True)
+    name = db.Column(db.String(255), nullable=False, index=True)
+    profile_path = db.Column(db.String(500))  # TMDB profile image path
+    biography = db.Column(db.Text)
+    birthday = db.Column(db.String(10))  # YYYY-MM-DD
+    place_of_birth = db.Column(db.String(255))
+    known_for_department = db.Column(db.String(50))  # Acting, Directing, etc.
+    popularity = db.Column(db.Float, default=0)
+    gender = db.Column(db.Integer)  # TMDB gender code (1=F, 2=M)
+    is_verified = db.Column(db.Boolean, default=False)  # Manually verified by admin
+    custom_bio = db.Column(db.Text)  # Admin override for biography
+    custom_profile_url = db.Column(db.String(500))  # Admin override for profile image
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def get_profile_url(self, size='w185'):
+        """Get TMDB profile image URL"""
+        if self.custom_profile_url:
+            return self.custom_profile_url
+        if self.profile_path:
+            return f'https://image.tmdb.org/t/p/{size}{self.profile_path}'
+        return '/static/img/no-profile.png'
+    
+    def get_bio(self):
+        """Get biography (custom override or TMDB)"""
+        return self.custom_bio if self.custom_bio else self.biography
+    
+    def __repr__(self):
+        return f'<Person {self.name}>'
+
+
+class AffiliateConfig(db.Model):
+    """Affiliate configuration for monetization (Prime Video & Apple Services)"""
+    __tablename__ = 'affiliate_config'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Amazon/Prime Video
+    amazon_associate_id = db.Column(db.String(255), default='')  # e.g., "ottradarin-21"
+    amazon_tag = db.Column(db.String(100), default='')  # Legacy, derived from associate_id
+    amazon_enabled = db.Column(db.Boolean, default=True)
+    
+    # Apple Services
+    apple_affiliate_id = db.Column(db.String(255), default='')  # AppleID from Apple's affiliate program
+    apple_campaign_token = db.Column(db.String(100), default='')  # Campaign token for tracking
+    apple_enabled = db.Column(db.Boolean, default=True)
+    
+    # Prime Channels (LionsGate, Discovery+, MGM+, etc.)
+    prime_channels_enabled = db.Column(db.Boolean, default=True)
+    
+    # Apple TV+ Bundle tracking
+    apple_bundle_enabled = db.Column(db.Boolean, default=True)
+    
+    # Settings
+    cookie_duration = db.Column(db.Integer, default=24)  # Hours (Amazon: 24h, Apple: varies)
+    link_health_check_enabled = db.Column(db.Boolean, default=True)
+    price_tracking_enabled = db.Column(db.Boolean, default=True)
+    
+    # CTA Customization
+    prime_cta_text = db.Column(db.String(255), default='Watch for Free with Prime Trial')
+    apple_cta_text = db.Column(db.String(255), default='Add to Apple Library')
+    
+    # Metadata
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.String(100), default='system')  # Track who changed it
+    
+    def __repr__(self):
+        return f'<AffiliateConfig Amazon:{self.amazon_associate_id} Apple:{self.apple_affiliate_id}>'
+
+
+class LinkHealthCheck(db.Model):
+    """Track affiliate link health to detect dead links"""
+    __tablename__ = 'link_health_checks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
+    platform = db.Column(db.String(50), nullable=False)  # 'amazon_prime' or 'apple_tv'
+    affiliate_url = db.Column(db.String(500), nullable=False)
+    status_code = db.Column(db.Integer)  # Last HTTP status (200, 404, etc.)
+    is_alive = db.Column(db.Boolean, default=True)
+    last_checked = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    error_message = db.Column(db.String(500))  # e.g., "404 Not Found"
+    
+    def __repr__(self):
+        return f'<LinkHealthCheck {self.platform}:{self.status_code}>'
+
+
+class PriceDrop(db.Model):
+    """Track price drops for movies on OTT platforms"""
+    __tablename__ = 'price_drops'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
+    platform = db.Column(db.String(50), nullable=False)  # 'amazon_prime' or 'apple_tv'
+    previous_price = db.Column(db.Float)  # In INR
+    current_price = db.Column(db.Float)  # In INR
+    discount_percentage = db.Column(db.Float)  # Calculated percentage
+    currency = db.Column(db.String(5), default='INR')
+    detected_at = db.Column(db.DateTime, default=datetime.utcnow)
+    posted_to_twitter = db.Column(db.Boolean, default=False)
+    posted_to_telegram = db.Column(db.Boolean, default=False)
+    twitter_post_id = db.Column(db.String(255))  # Tweet ID
+    
+    def __repr__(self):
+        return f'<PriceDrop {self.platform}: ₹{self.previous_price} → ₹{self.current_price}>'

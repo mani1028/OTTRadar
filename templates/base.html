@@ -9,27 +9,45 @@
     <meta name="theme-color" content="#000000">
     
     <!-- Primary Meta Tags -->
-    <title>{% block title %}OTT RADAR - Track Every Movie. Find Where It Streams.{% endblock %}</title>
-    <meta name="title" content="{% block meta_title %}OTT RADAR - Track Every Movie. Find Where It Streams.{% endblock %}">
-    <meta name="description" content="{% block meta_description %}Discover movies across Netflix, Prime Video, Hotstar & more. Track OTT releases, find where to watch, and never miss a movie again.{% endblock %}">
+    <title>{% block title %}OTT RADAR - Never Search OTT Apps Again{% endblock %}</title>
+    <meta name="title" content="{% block meta_title %}OTT RADAR - Never Search OTT Apps Again{% endblock %}">
+    <meta name="description" content="{% block meta_description %}Find where any movie or series is streaming across your favorite platforms in seconds.{% endblock %}">
     <meta name="keywords" content="{% block meta_keywords %}OTT movies, Netflix, Prime Video, Hotstar, JioCinema, movie tracker, where to watch, streaming movies, OTT releases{% endblock %}">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
     <meta property="og:url" content="{% block og_url %}{{ request.url }}{% endblock %}">
-    <meta property="og:title" content="{% block og_title %}OTT RADAR - Track Every Movie. Find Where It Streams.{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}Discover movies across Netflix, Prime Video, Hotstar & more. All in one place.{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}OTT RADAR - Never Search OTT Apps Again{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Find where any movie or series is streaming across your favorite platforms in seconds.{% endblock %}">
     <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/og-image.jpg', _external=True) }}{% endblock %}">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="{{ request.url }}">
-    <meta property="twitter:title" content="{% block twitter_title %}OTT RADAR - Track Every Movie{% endblock %}">
-    <meta property="twitter:description" content="{% block twitter_description %}Discover movies across 10+ OTT platforms. Find where to watch instantly.{% endblock %}">
+    <meta property="twitter:title" content="{% block twitter_title %}OTT RADAR - Never Search OTT Apps Again{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}Find where any movie or series is streaming across your favorite platforms in seconds.{% endblock %}">
     <meta property="twitter:image" content="{% block twitter_image %}{{ url_for('static', filename='images/og-image.jpg', _external=True) }}{% endblock %}">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="{% block canonical %}{{ request.url }}{% endblock %}">
+
+    <!-- Schema Markup (JSON-LD) -->
+    {% block schema_markup %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "OTT RADAR",
+      "url": "{{ url_for('index', _external=True) }}",
+      "logo": "{{ url_for('static', filename='images/logo.png', _external=True) }}",
+      "description": "Track every movie. Find where it streams across 10+ OTT platforms.",
+      "sameAs": [
+        "https://twitter.com/ottradarin",
+        "https://www.instagram.com/ottradarin"
+      ]
+    }
+    </script>
+    {% endblock %}
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -56,7 +74,9 @@
                 <li class="nav-dropdown">
                     <a href="{{ url_for('filter_movies') }}">Discover <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 0.4rem;"></i></a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{ url_for('free_movies') }}"><i class="fas fa-star"></i> Free Movies</a></li>
+                        <li><a href="{{ url_for('movies_only') }}"><i class="fas fa-film"></i> Movies & Series</a></li>
+                        <li><a href="{{ url_for('tv_series_list') }}"><i class="fas fa-tv"></i> TV Series</a></li>
+                        <li><a href="{{ url_for('filter_movies') }}"><i class="fas fa-star"></i> YouTube Movies</a></li>
                         <li><a href="{{ url_for('trending') }}"><i class="fas fa-fire"></i> Trending</a></li>
                         <li><a href="{{ url_for('new_on_ott') }}"><i class="fas fa-new"></i> New on OTT</a></li>
                         <li><a href="{{ url_for('hidden_gems') }}"><i class="fas fa-gem"></i> Hidden Gems</a></li>
@@ -81,7 +101,9 @@
             <ul>
                 <li><a href="{{ url_for('index') }}">Home</a></li>
                 <li><a href="{{ url_for('filter_movies') }}">Discover</a></li>
-                <li><a href="{{ url_for('free_movies') }}"><i class="fas fa-star"></i> Free Movies</a></li>
+                <li><a href="{{ url_for('movies_only') }}"><i class="fas fa-film"></i> Movies & Series</a></li>
+                <li><a href="{{ url_for('tv_series_list') }}"><i class="fas fa-tv"></i> TV Series</a></li>
+                <li><a href="{{ url_for('filter_movies') }}"><i class="fas fa-star"></i> YouTube Movies</a></li>
                 <li><a href="{{ url_for('trending') }}"><i class="fas fa-fire"></i> Trending</a></li>
                 <li><a href="{{ url_for('new_on_ott') }}"><i class="fas fa-new"></i> New on OTT</a></li>
                 <li><a href="{{ url_for('hidden_gems') }}"><i class="fas fa-gem"></i> Hidden Gems</a></li>
@@ -126,7 +148,7 @@
         </a>
     </nav>
 
-    <!-- Consolidated JavaScript Bundle -->
-    <script src="{{ url_for('static', filename='js/main.bundle.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile.js') }}"></script>
 </body>
 </html>

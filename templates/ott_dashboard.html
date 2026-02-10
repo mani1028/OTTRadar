@@ -20,10 +20,10 @@
             <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">Tracked on streaming platforms</p>
         </div>
 
-        <!-- Free Movies -->
+        <!-- YouTube Movies -->
         <div style="padding: 2rem; background: linear-gradient(135deg, rgba(76,175,80,0.1), rgba(76,175,80,0.05)); border-radius: var(--radius-md); border: 1px solid rgba(76,175,80,0.3);">
             <p style="color: #4caf50; margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">
-                <i class="fas fa-gift" style="margin-right: 0.5rem;"></i> Free Movies
+                <i class="fas fa-gift" style="margin-right: 0.5rem;"></i> YouTube Movies
             </p>
             <p style="margin: 0; font-size: 2.5rem; font-weight: 700; color: #4caf50;">{{ free_movie_count | default(0) }}</p>
             <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
@@ -76,13 +76,13 @@
         </h2>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-            <!-- Free Movies -->
-            <a href="{{ url_for('free_movies') }}" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(76,175,80,0.15), rgba(76,175,80,0.05)); border: 1.5px solid rgba(76,175,80,0.3); border-radius: var(--radius-md); text-decoration: none; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='var(--text-primary)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(76,175,80,0.3)'">
+            <!-- YouTube Movies -->
+            <a href="{{ url_for('filter_movies') }}" style="padding: 1.5rem; background: linear-gradient(135deg, rgba(76,175,80,0.15), rgba(76,175,80,0.05)); border: 1.5px solid rgba(76,175,80,0.3); border-radius: var(--radius-md); text-decoration: none; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='var(--text-primary)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(76,175,80,0.3)'">
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
                     <i class="fas fa-gift" style="font-size: 1.5rem; color: #4caf50;"></i>
-                    <p style="margin: 0; font-weight: 600; color: var(--text-primary);">Free Movies</p>
+                    <p style="margin: 0; font-weight: 600; color: var(--text-primary);">YouTube Movies</p>
                 </div>
-                <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">Browse all free content</p>
+                <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">Official uploads on YouTube</p>
             </a>
 
             <!-- New on OTT -->
