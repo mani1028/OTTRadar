@@ -81,16 +81,20 @@ class OTTDiscovery:
     
     @staticmethod
     def new_on_ott(days=60, limit=50):
-        """New on OTT: recent OTT releases or very recent theatrical movies"""
+        """New on OTT: Only movies actually released on OTT in the last N days"""
         from datetime import datetime, timedelta
+        today = datetime.utcnow().strftime('%Y-%m-%d')
         cutoff = (datetime.utcnow() - timedelta(days=days)).strftime('%Y-%m-%d')
-        return Movie.query.filter(
+        # Only include movies with a valid ott_release_date in the past (or today) and with at least one OTT platform
+        query = Movie.query.filter(
             Movie.is_active == True,
-            or_(
-                and_(Movie.ott_release_date.isnot(None), Movie.ott_release_date >= cutoff),
-                and_(Movie.release_date.isnot(None), Movie.release_date >= cutoff)
-            )
-        ).order_by(desc(Movie.release_date)).limit(limit).all()
+            Movie.ott_release_date.isnot(None),
+            Movie.ott_release_date != '',
+            Movie.ott_release_date >= cutoff,
+            Movie.ott_release_date <= today,
+            Movie.ott_platforms != '{}'
+        ).order_by(desc(Movie.ott_release_date)).limit(limit)
+        return query.all()
     
     @staticmethod
     def free_movies(limit=50):
