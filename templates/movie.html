@@ -1,9 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}{{ movie.title }} - OTT Tracker{% endblock %}
+{% block title %}
+    Watch {{ movie.title }} Online in India | OTT Radar
+{% endblock %}
 
-{% block meta_title %}{{ movie.title }} - Where to Watch{% endblock %}
-{% block meta_description %}Watch {{ movie.title }} on Netflix, Prime Video, Hotstar & more. Find where to watch with ratings, cast & reviews.{% endblock %}
+{% block meta_description %}
+    Find where {{ movie.title }} is streaming on Netflix, Prime, Hotstar and more in India. Check OTT release dates and streaming platforms.
+{% endblock %}
 {% block og_type %}movie{% endblock %}
 {% block og_title %}{{ movie.title }}{% endblock %}
 {% block og_description %}{{ movie.overview[:160] if movie.overview else "Watch " + movie.title }}. {% if movie.rating %}Rating: {{ "%.1f"|format(movie.rating) }}/10.{% endif %} Find where to watch on streaming platforms.{% endblock %}

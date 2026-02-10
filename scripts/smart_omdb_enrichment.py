@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Smart OMDb enrichment with API call tracking to avoid wasting the 1000/day limit.
+Smart OMDb enrichment with API call tracking to avoid wasting the 2000/day limit.
 
 This script:
 1. Tracks which movies were already checked with OMDb
@@ -30,7 +30,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OMDB_API_KEY = os.getenv('OMDB_API_KEY', '5cad8aea')
+OMDB_API_KEY = os.getenv('OMDB_API_KEY', 'ab0011cf')
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
 OMDB_BASE = 'http://www.omdbapi.com/'
 TMDB_BASE = 'https://api.themoviedb.org/3'
@@ -238,8 +238,8 @@ def check_status():
         
         print(f"\n🔑 OMDb API Usage:")
         print(f"   • Total calls made: {tracking.get('total_api_calls', 0)}")
-        print(f"   • Daily limit: 1000")
-        print(f"   • Remaining today: {1000 - tracking.get('total_api_calls', 0)} (approx)")
+        print(f"   • Daily limit: 2000")
+        print(f"   • Remaining today: {2000 - tracking.get('total_api_calls', 0)} (approx)")
         
         if tracking.get('last_run'):
             print(f"   • Last run: {tracking['last_run']}")
@@ -290,7 +290,7 @@ def main():
     print(f"🔑 OMDb Key: {OMDB_API_KEY[:4]}...")
     print(f"📊 Limit: {args.limit} movies")
     print(f"📝 Tracking file: {TRACKING_FILE}")
-    print(f"🔄 API calls this session: {tracking.get('total_api_calls', 0)}/1000")
+    print(f"🔄 API calls this session: {tracking.get('total_api_calls', 0)}/2000")
     print("=" * 70)
     
     with app.app_context():

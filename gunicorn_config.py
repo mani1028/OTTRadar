@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Server socket
-bind = "0.0.0.0:5000"
+bind = "0.0.0.0:5001"
 family = "socket.AF_INET"
 
 # Worker processes - use (2 x CPU_count + 1)

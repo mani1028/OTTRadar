@@ -42,8 +42,10 @@ if not TMDB_API_KEY:
     logger.error("TMDB_API_KEY not found in .env")
     sys.exit(1)
 
+
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
 TMDB_DISCOVER_URL = f"{TMDB_BASE_URL}/discover/movie"
+TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 
 # Lock file for concurrent run prevention
 LOCK_FILE = Path(__file__).parent.parent / 'discover_new_movies.lock'
@@ -190,12 +192,16 @@ def get_movie_details(tmdb_id):
     if not result:
         return None
     
+    poster_path = result.get('poster_path')
+    backdrop_path = result.get('backdrop_path')
+    full_poster_url = f"{TMDB_IMAGE_BASE}{poster_path}" if poster_path else None
+    full_backdrop_url = f"{TMDB_IMAGE_BASE}{backdrop_path}" if backdrop_path else None
     return {
         'tmdb_id': tmdb_id,
         'title': result.get('title', ''),
         'overview': result.get('overview', ''),
-        'poster': result.get('poster_path'),
-        'backdrop': result.get('backdrop_path'),
+        'poster': full_poster_url,
+        'backdrop': full_backdrop_url,
         'release_date': result.get('release_date', ''),
         'rating': result.get('vote_average', 0),
         'runtime': result.get('runtime', 0),

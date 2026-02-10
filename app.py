@@ -305,10 +305,15 @@ def about():
 def sitemap():
     """Dynamic XML Sitemap for SEO crawlers."""
     movies = Movie.query.filter_by(is_active=True).limit(5000).all()
-    sitemap_xml = render_template('sitemap_template.xml', movies=movies, base_url=request.host_url)
+    sitemap_xml = render_template('sitemap.xml', movies=movies, base_url=request.host_url)
     response = app.make_response(sitemap_xml)
     response.headers['Content-Type'] = 'application/xml'
     return response
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory(app.static_folder, 'robots.txt', mimetype='text/plain')
+
 
 @app.route('/hidden-gems')
 def hidden_gems():
@@ -615,6 +620,7 @@ def admin_submission_update(id):
     elif action == 'reject': submission.status = 'rejected'
     db.session.commit()
     return redirect(url_for('admin'))
+
 
 @app.route('/admin/submission/<int:id>/delete', methods=['POST'])
 @login_required
