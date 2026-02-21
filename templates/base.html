@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+            <meta name="google-adsense-account" content="ca-pub-8346311897787343">
+        <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7JN145GKX9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-7JN145GKX9');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Primary Meta Tags -->
+    <title>{% block title %}OTT Radar | Find Where to Watch Movies Online{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Discover where to stream your favorite movies on Netflix, Prime Video, Hotstar, and more in India.{% endblock %}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ request.url }}{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}OTT RADAR - Never Search OTT Apps Again{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Find where any movie or series is streaming across your favorite platforms in seconds.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/og-image.jpg', _external=True) }}{% endblock %}">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title" content="{% block twitter_title %}OTT RADAR - Never Search OTT Apps Again{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}Find where any movie or series is streaming across your favorite platforms in seconds.{% endblock %}">
+    <meta property="twitter:image" content="{% block twitter_image %}{{ url_for('static', filename='images/og-image.jpg', _external=True) }}{% endblock %}">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{% block canonical %}{{ request.url }}{% endblock %}">
+
+    <!-- Schema Markup (JSON-LD) -->
+    {% block schema_markup %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "OTT RADAR",
+      "url": "{{ url_for('index', _external=True) }}",
+      "logo": "{{ url_for('static', filename='images/logo.png', _external=True) }}",
+      "description": "Track every movie. Find where it streams across 10+ OTT platforms.",
+      "sameAs": [
+        "https://twitter.com/ottradarin",
+        "https://www.instagram.com/ottradarin"
+      ]
+    }
+    </script>
+    {% endblock %}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}" media="screen and (max-width: 768px)">
+</head>
+<body>
+    <!-- Unified Top Navigation with Glassmorphism -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <!-- Logo -->
+            <div class="nav-logo">
+                <a href="{{ url_for('index') }}"><span class="logo-text">OTT RADAR</span></a>
+            </div>
+
+            <!-- Spacer for desktop layout -->
+            <div style="flex: 1;"></div>
+
+            <!-- Desktop Navigation Links -->
+            <ul class="nav-links desktop">
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li class="nav-dropdown">
+                    <a href="{{ url_for('filter_movies') }}">Discover <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 0.4rem;"></i></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('movies_only') }}"><i class="fas fa-film"></i> Movies & Series</a></li>
+                        <li><a href="{{ url_for('tv_series_list') }}"><i class="fas fa-tv"></i> TV Series</a></li>
+                        <li><a href="{{ url_for('filter_movies') }}"><i class="fas fa-star"></i> YouTube Movies</a></li>
+                        <li><a href="{{ url_for('trending') }}"><i class="fas fa-fire"></i> Trending</a></li>
+                        <li><a href="{{ url_for('new_on_ott') }}"><i class="fas fa-new"></i> New on OTT</a></li>
+                        <li><a href="{{ url_for('hidden_gems') }}"><i class="fas fa-gem"></i> Hidden Gems</a></li>
+                        <li><hr style="margin: 0.5rem 0; border: none; border-top: 1px solid rgba(255,255,255,0.1);"></li>
+                        <li><a href="{{ url_for('filter_movies') }}"><i class="fas fa-filter"></i> Smart Filter</a></li>
+                        <!-- <li><a href="#"><i class="fas fa-chart-bar"></i> OTT Dashboard</a></li> -->
+                    </ul>
+                </li>
+                <li><a href="{{ url_for('watchlist') }}"  style="display: flex; align-items: center; gap: 0.5rem;"> Watchlist</a></li>
+                <li><a href="{{ url_for('suggest') }}">Requests</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+            </ul>
+
+            <!-- Mobile Hamburger Menu -->
+            <button class="nav-toggle mobile" id="mobile-menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu (hidden by default) -->
+        <div class="mobile-menu hidden" id="mobile-menu-content">
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('filter_movies') }}">Discover</a></li>
+                <li><a href="{{ url_for('movies_only') }}"><i class="fas fa-film"></i> Movies & Series</a></li>
+                <li><a href="{{ url_for('tv_series_list') }}"><i class="fas fa-tv"></i> TV Series</a></li>
+                <li><a href="{{ url_for('filter_movies') }}"><i class="fas fa-star"></i> YouTube Movies</a></li>
+                <li><a href="{{ url_for('trending') }}"><i class="fas fa-fire"></i> Trending</a></li>
+                <li><a href="{{ url_for('new_on_ott') }}"><i class="fas fa-new"></i> New on OTT</a></li>
+                <li><a href="{{ url_for('hidden_gems') }}"><i class="fas fa-gem"></i> Hidden Gems</a></li>
+                <li><a href="{{ url_for('filter_movies') }}"><i class="fas fa-filter"></i> Smart Filter</a></li>
+                <!-- <li><a href="#"><i class="fas fa-chart-bar"></i> OTT Dashboard</a></li> -->
+                <li><a href="{{ url_for('watchlist') }}"><i class="fas fa-bookmark"></i> Watchlist</a></li>
+                <li><a href="{{ url_for('suggest') }}">Requests</a></li>
+                <li><a href="{{ url_for('about') }}">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav-bar">
+        <a href="{{ url_for('index') }}" class="bottom-nav-item {% if request.path == '/' %}active{% endif %}" title="Home">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('filter_movies') }}" class="bottom-nav-item {% if request.path == '/filter' %}active{% endif %}" title="Explore">
+            <i class="fas fa-compass"></i>
+            <span>Explore</span>
+        </a>
+        <a href="{{ url_for('search_page') }}" class="bottom-nav-item {% if request.path == '/search' %}active{% endif %}" title="Search">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="{{ url_for('suggest') }}" class="bottom-nav-item {% if request.path == '/suggest' %}active{% endif %}" title="Suggest">
+            <i class="fas fa-lightbulb"></i>
+            <span>Suggest</span>
+        </a>
+    </nav>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{% extends "base_admin.html" %}
+
+{% block header_title %}All User Submissions{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2><i class="fas fa-inbox" style="color:var(--primary-color); margin-right:8px;"></i> All User Submissions</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Title / Subject</th>
+                    <th>Content</th>
+                    <th>Status</th>
+                                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for submission in submissions %}
+                <tr>
+                    <td>{{ submission.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ submission.submission_type|capitalize }}</td>
+                    <td>{{ submission.movie_title }}</td>
+                    <td style="max-width:300px; white-space:pre-line; overflow-wrap:break-word;">{{ submission.comment }}</td>
+                    <td>
+                        {% if submission.status == 'pending' %}
+                            <span style="color:#f59e0b; font-weight:600;">Pending</span>
+                        {% else %}
+                            <span style="color:#10b981; font-weight:600;">{{ submission.status|title }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button onclick="showDetails({{ submission.id }})" class="btn btn-info btn-sm">View</button>
+                        <div id="modal-{{ submission.id }}" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+                            <div style="background:white; padding:2rem; border-radius:12px; width:400px; max-width:90vw; text-align:left; position:relative;">
+                                <button onclick="closeDetails({{ submission.id }})" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:1.5rem; color:#888;">&times;</button>
+                                <h3>Submission Details</h3>
+                                <p><b>Date:</b> {{ submission.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                <p><b>Type:</b> {{ submission.submission_type|capitalize }}</p>
+                                <p><b>Title/Subject:</b> {{ submission.movie_title }}</p>
+                                <p><b>Content:</b><br>{{ submission.comment }}</p>
+                                <p><b>Status:</b> {{ submission.status|capitalize }}</p>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <script>
+                function showDetails(id) {
+                    document.getElementById('modal-' + id).style.display = 'flex';
+                }
+                function closeDetails(id) {
+                    document.getElementById('modal-' + id).style.display = 'none';
+                }
+                </script>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:2rem; color:#94a3b8;">
+                        No submissions found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+Flask==3.0.1
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
+SQLAlchemy==2.0.46
+python-dotenv==1.0.0
+requests==2.31.0
+schedule==1.2.1
+justwatch==0.5.1
+Flask-Migrate==4.0.5
+flask-limiter
+flask-cors==4.0.0
+gunicorn==20.1.0
+psycopg2-binary
+flask-login
+Flask-WTF
+
+# Celery + Redis
+celery
+redis
+Flask-Caching
+# Remove if not needed: flask-limiter, flask-cors, flask-login, Flask-WTF
+# Already present: Flask, Flask-SQLAlchemy, Flask-Migrate

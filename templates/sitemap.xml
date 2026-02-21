@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>{{ base_url }}</loc><priority>1.0</priority></url>
+  <url><loc>{{ base_url }}new-on-ott</loc><priority>0.9</priority></url>
+  <url><loc>{{ base_url }}trending</loc><priority>0.8</priority></url>
+  
+  {% for movie in movies %}
+  <url>
+    <loc>{{ base_url }}movie/{{ movie.title|movie_slug }}</loc>
+    <lastmod>{{ movie.ott_release_date if movie.ott_release_date else '2024-05-24' }}</lastmod>
+    <priority>0.6</priority>
+  </url>
+  {% endfor %}
+</urlset>

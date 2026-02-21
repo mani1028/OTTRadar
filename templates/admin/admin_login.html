@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - OTT Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #000000, #1a0000);">
+        <div style="background: var(--bg-card); padding: 3rem; border-radius: var(--radius-md); border: 1px solid var(--border); max-width: 400px; width: 90%;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <i class="fas fa-shield-alt" style="font-size: 3rem; color: var(--accent-primary); margin-bottom: 1rem;"></i>
+                <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Admin Login</h1>
+                <p style="color: var(--text-secondary);">OTT Tracker Management</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div style="padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius-sm); background: {% if category == 'error' %}rgba(229, 9, 20, 0.2){% else %}rgba(76, 175, 80, 0.2){% endif %}; border: 1px solid {% if category == 'error' %}var(--accent-primary){% else %}#4CAF50{% endif %};">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Username (Optional)</label>
+                    <input type="text" name="username" placeholder="admin" value="admin"
+                           style="width: 100%; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 1rem;">
+                    <small style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem; display: block;">Used for audit logging only</small>
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Password</label>
+                    <input type="password" name="password" required autofocus
+                           style="width: 100%; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 1rem;">
+                </div>
+
+                <button type="submit" 
+                        style="width: 100%; padding: 0.75rem 1.5rem; background: var(--accent-primary); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+
+                <a href="{{ url_for('index') }}" 
+                   style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

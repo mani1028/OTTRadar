@@ -1,0 +1,2820 @@
+/* Ensure the mobile menu is completely hidden when the hidden class is present */
+.mobile-menu.hidden {
+    display: none !important;
+}
+
+/* Ensure smooth dropdown display when active */
+.mobile-menu.active {
+    display: block !important;
+    animation: slideDownMenu 0.3s ease forwards;
+}
+
+@keyframes slideDownMenu {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* ============================================
+   MOBILE-FIRST RESPONSIVE DESIGN
+   Enhanced for optimal mobile experience
+   ============================================ */
+
+/* ============ VISIBILITY HELPERS ============ */
+.mobile-only {
+    display: block !important;
+}
+
+.desktop-only {
+    display: none !important;
+}
+
+/* ============ MOBILE PAGE HEADER ============ */
+.mobile-page-header {
+    padding: 20px 16px 16px 16px;
+    background: linear-gradient(to bottom, var(--bg-body), transparent);
+}
+
+.mobile-page-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+
+.mobile-page-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 400;
+}
+
+/* ============ MAIN CONTENT PADDING ============ */
+.main-content {
+    padding-bottom: 85px;
+    min-height: 100vh;
+}
+
+.container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
+}
+
+/* ============ ADMIN PORTAL MOBILE STYLES ============ */
+.admin-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 0 16px;
+    margin: 1.5rem 0 1rem;
+}
+
+.admin-header h1 {
+    font-size: 1.4rem;
+    margin: 0;
+    word-break: break-word;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.header-actions a {
+    flex: 1;
+    min-height: 42px;
+    padding: 10px 12px !important;
+    font-size: 0.85rem;
+}
+
+.admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem;
+    padding: 0 16px;
+    margin: 1rem 0;
+}
+
+.stat-card-modern {
+    padding: 1rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.25rem;
+}
+
+.stat-card-modern h3 {
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.stat-card-modern p {
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.stat-change {
+    font-size: 0.7rem;
+}
+
+.admin-section {
+    margin-bottom: 1.5rem;
+    padding: 0 16px;
+}
+
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.section-head h2 {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.integrity-snapshot {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+}
+
+.snapshot-card {
+    padding: 0.8rem !important;
+}
+
+.platform-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.platform-bar {
+    grid-template-columns: 80px 1fr 50px !important;
+    gap: 0.75rem !important;
+    font-size: 0.85rem;
+}
+
+.quick-actions {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+}
+
+.quick-card {
+    padding: 1rem !important;
+    gap: 0.75rem;
+}
+
+.quick-card i {
+    font-size: 1.8rem;
+}
+
+/* ============ NAVBAR SEARCH - ALWAYS SHOW ON MOBILE ============ */
+.nav-search.hide-on-desktop {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 95;
+    background: rgba(15, 15, 15, 0.98);
+    backdrop-filter: blur(8px);
+    padding: 12px 16px;
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.search-form {
+    width: 100%;
+}
+
+.search-form input {
+    font-size: 15px;
+    padding: 11px 15px 11px 40px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-form input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ============ HERO BANNER - HIDE ON MOBILE ============ */
+.hero-banner.desktop-only {
+    display: none;
+}
+
+.row-section:first-of-type {
+    padding-top: 1.5rem !important;
+}
+/* Enhanced for better touch targets and mobile feel */
+.bottom-nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.98), rgba(16, 16, 16, 0.95));
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex !important;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    height: 65px;
+    padding-bottom: env(safe-area-inset-bottom, 10px);
+    z-index: 100;
+    gap: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bottom-nav-bar.active {
+    display: flex;
+}
+
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 6px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 18px; /* Reduced from 26px - fixes the "big elephant" look */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 50px; /* Reduced from 60px */
+    cursor: pointer;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav-item span {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    transition: all 0.3s ease;
+}
+
+.bottom-nav-item.active {
+    color: var(--accent-primary);
+}
+
+.bottom-nav-item.active span {
+    color: var(--accent-primary);
+}
+
+@media (hover: hover) {
+    .bottom-nav-item:hover {
+        color: var(--accent-primary);
+    }
+    
+    .bottom-nav-item:hover span {
+        color: var(--accent-primary);
+    }
+}
+
+/* Active indicator */
+.bottom-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: var(--accent-primary);
+    border-radius: 0 0 3px 3px;
+}
+
+/* Touch feedback */
+.bottom-nav-item:active {
+    opacity: 0.7;
+}
+
+/* ============ HIDE FOOTER ON MOBILE ============ */
+.site-footer,
+.cta-section {
+    display: none !important;
+}
+
+/* ============ MOBILE GRID (3 COLUMNS - iBOMMA STYLE) ============ */
+.movie-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 0 8px !important;
+}
+
+/* iBomma 3-Column Grid for Home Sections */
+.ibomma-grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 0 12px;
+    margin: 0;
+}
+
+.ibomma-grid-3col .poster-card {
+    width: 100%;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.ibomma-grid-3col .poster-wrapper {
+    aspect-ratio: 2/3;
+    min-height: auto;
+    border-radius: 6px;
+}
+
+.ibomma-grid-3col .poster-title {
+    font-size: 13px;
+    margin-top: 6px;
+    line-height: 1.2;
+    -webkit-line-clamp: 2;
+}
+
+.ibomma-grid-3col .poster-year {
+    font-size: 11px;
+    margin-top: 1px;
+}
+
+/* ============ MOBILE POSTER CARDS ============ */
+.poster-card {
+    transition: opacity 0.15s ease;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.poster-card:active {
+    opacity: 0.8;
+}
+
+.poster-wrapper {
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 2/3 !important;
+    min-height: 200px;
+    background: #1a1a1a !important; /* Dark placeholder - prevents layout shift */
+}
+
+.poster-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 1;
+    transition: opacity 0.3s ease-out, filter 0.3s ease-out;
+}
+
+
+.poster-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 8px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: var(--text-primary);
+}
+
+.poster-year {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Enhanced Platform Badges for Mobile */
+.platform-badges {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 2;
+}
+
+.platform-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    backdrop-filter: blur(8px);
+}
+
+
+/* ============ HORIZONTAL SCROLL ROWS ============ */
+/* Enhanced for mobile touch scrolling */
+.row-section {
+    padding: 20px 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.row-header {
+    padding: 0 16px 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.row-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.3px;
+    margin: 0 !important;
+    color: var(--text-primary);
+}
+
+.row-see-all {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.row-see-all:active {
+    opacity: 0.7;
+}
+
+.carousel-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
+    margin: 0;
+    position: relative;
+}
+
+.carousel-container::-webkit-scrollbar {
+    display: none;
+}
+
+.carousel-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.horizontal-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 16px;
+    margin: 0.5rem;
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.horizontal-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.carousel-row {
+    display: flex;
+    gap: 12px;
+    padding: 0 16px;
+}
+
+.carousel-row .poster-card {
+    flex: 0 0 140px;
+    scroll-snap-align: start;
+}
+
+.horizontal-scroll .poster-card {
+    flex: 0 0 140px;
+    scroll-snap-align: start;
+}
+
+/* ============ MOBILE SKELETON CARDS ============ */
+.mobile-skeleton-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 0 0 140px;
+}
+
+.mobile-skeleton-poster {
+    width: 100%;
+    height: 210px;
+    border-radius: 12px;
+}
+
+.mobile-skeleton-title {
+    width: 90%;
+    height: 14px;
+    border-radius: 6px;
+}
+
+/* Make first card align with container padding */
+.horizontal-scroll .poster-card:first-child,
+.carousel-row .poster-card:first-child {
+    scroll-snap-align: start;
+}
+
+/* Add padding to last card for better scroll end */
+.horizontal-scroll::after,
+.carousel-row::after {
+    content: '';
+    display: block;
+    width: 4px;
+    flex-shrink: 0;
+}
+
+.carousel-arrow {
+    display: none;
+}
+
+/* ============ STICKY SEARCH BAR ============ */
+.discover-search-bar {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(to bottom, var(--bg-body), rgba(16, 16, 16, 0.95));
+    backdrop-filter: blur(8px);
+    padding: 16px 16px 12px 16px;
+    z-index: 50;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.search-form-discover {
+    position: relative;
+    width: 100%;
+}
+
+.search-form-discover i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+.search-input-discover {
+    width: 100%;
+    padding: 12px 14px 12px 40px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    color: white;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.search-input-discover:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ============ FILTER CHIPS ============ */
+.filter-chips-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px 16px 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.filter-chips-container::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-chips-scroll {
+    display: flex;
+    gap: 8px;
+    min-width: 100%;
+}
+
+.chip-group {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    min-height: 36px;
+    touch-action: manipulation;
+}
+
+.filter-chip:active,
+.filter-chip:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.filter-chip-active {
+    background: var(--accent-primary) !important;
+    border-color: var(--accent-primary) !important;
+    color: white !important;
+}
+
+.filter-chip i {
+    font-size: 14px;
+}
+
+/* ============ BOTTOM SHEET DRAWER ============ */
+.filters-sidebar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 80vh !important;
+    background: var(--bg-body) !important;
+    border: none !important;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 20px 16px 16px 16px !important;
+    z-index: 200 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+    overflow-y: auto !important;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+}
+
+.filters-sidebar.closing {
+    display: none;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.sidebar-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    min-height: 44px;
+}
+
+.sidebar-close:active {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(0.95);
+}
+
+/* ============ FILTER FORM ============ */
+.filters-sidebar-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.filter-section-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-label-sidebar {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-input-sidebar {
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+    min-height: 44px;
+}
+
+.filter-input-sidebar:focus {
+    border-color: var(--accent-primary);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ============ BUTTONS ============ */
+.sidebar-toggle {
+    padding: 10px 18px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-secondary,
+.btn-hero-secondary {
+    padding: 12px 24px !important;
+    font-size: 15px !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-secondary:active,
+.btn-hero-secondary:active {
+    transform: scale(0.97);
+}
+
+.btn-load-more {
+    width: 100%;
+    padding: 14px 16px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    background: var(--accent-primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-load-more:active {
+    background: var(--accent-hover);
+    transform: scale(0.98);
+}
+
+/* ============ TYPOGRAPHY ============ */
+body {
+    font-size: 15px;
+}
+
+.hero-title {
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+}
+
+.hero-subtitle {
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+}
+
+.poster-title {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+/* ============ SPACING ============ */
+.container {
+    padding: 0 16px !important;
+}
+
+@media (max-width: 767px) {
+    .hero-buttons {
+        display: flex;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    .btn-hero-primary,
+    .btn-hero-secondary {
+        padding: 14px 16px !important;
+        font-size: 15px !important;
+        min-height: 44px !important;
+        touch-action: manipulation;
+    }
+}
+
+/* ============ DISCOVER PAGE LAYOUT ============ */
+.discover-page {
+    padding: var(--nav-height) 16px 90px 16px;
+    margin: 0;
+    background: var(--bg-body);
+}
+
+.discover-header {
+    padding: 0 0 12px 0;
+    display: none;
+}
+
+.discover-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.discover-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.discover-layout {
+    display: flex !important;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+}
+
+.discover-main {
+    flex: 1;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.filters-top-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+    position: sticky;
+    top: 70px;
+    z-index: 40;
+}
+
+.results-count {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ============ OVERLAY BACKDROP ============ */
+.filters-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 150;
+    cursor: pointer;
+}
+
+/* ============================================
+   MOBILE MOVIE DETAIL PAGE
+   ============================================ */
+
+/* Movie Hero Banner - Mobile Optimized */
+.movie-detail-hero {
+    height: 320px !important;
+    margin-top: 0 !important;
+}
+
+/* Hide the large hero on mobile in favor of the mini-hero */
+.movie-detail-hero {
+    display: none !important;
+}
+
+/* Mobile Trailer - Responsive and Full Width */
+section > div[style*="position: relative; width: 100%; max-width: 768px"] {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-bottom: 16px !important;
+}
+
+.trailer-wrapper {
+    max-width: 100% !important;
+    margin: 16px 0 !important;
+    aspect-ratio: 16 / 9 !important;
+}
+
+/* Mini-hero layout (poster + title + overview) */
+.movie-detail-mini-hero {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px 12px 16px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    align-items: flex-start;
+}
+
+.mini-hero-poster {
+    flex: 0 0 72px;
+    max-width: 72px;
+}
+
+.mini-hero-poster img,
+.mini-hero-poster-fallback {
+    width: 100%;
+    max-height: 108px;
+    object-fit: cover;
+    aspect-ratio: 2 / 3;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+    background: #141414;
+}
+
+.mini-hero-poster-fallback {
+    aspect-ratio: 2 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 20px;
+}
+
+.mini-hero-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.movie-title-bold {
+    font-size: 20px;
+    line-height: 1.25;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.2px;
+}
+
+.movie-meta-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.movie-meta-chips .meta-chip {
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.movie-meta-chips .rating-chip {
+    color: #ffc107;
+    border-color: rgba(255, 193, 7, 0.35);
+    background: rgba(255, 193, 7, 0.15);
+}
+
+.overview-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin: 2px 0 0 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.movie-detail-mini-hero.is-expanded .overview-text {
+    -webkit-line-clamp: unset;
+    overflow: visible;
+}
+
+.overview-toggle {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    font-weight: 700;
+    font-size: 12px;
+    padding: 0;
+    cursor: pointer;
+}
+
+/* Mobile movie header (title + trailer CTA) */
+.movie-mobile-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px 10px 16px;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.movie-mobile-title {
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.3px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.movie-mobile-header .hero-trailer-btn {
+    justify-content: center;
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+}
+
+.movie-detail-hero img {
+    opacity: 0.65 !important;
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+.movie-detail-hero > div:last-child {
+    padding: 24px 16px !important;
+}
+
+.movie-detail-hero .container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    align-items: center !important;
+    padding: 0 !important;
+}
+
+/* Mobile Poster - Smaller and Centered */
+.movie-detail-hero .container > div:first-child {
+    width: 100px !important;
+    margin: 0 !important;
+}
+
+.movie-detail-hero .container > div:first-child img {
+    border-width: 2px !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Mobile Title & Info */
+.movie-detail-hero .container > div:last-child {
+    width: 100%;
+    text-align: center;
+}
+
+.movie-detail-hero h1 {
+    font-size: 20px !important;
+    line-height: 1.3 !important;
+    margin-bottom: 6px !important;
+}
+
+.movie-detail-hero .container > div:last-child > p {
+    font-size: 13px !important;
+}
+
+/* Status Badge and Title Container */
+.movie-detail-hero .container > div:last-child > div:first-child {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 10px !important;
+}
+
+.movie-detail-hero .container > div:last-child > div:first-child > div {
+    flex: none !important;
+}
+
+/* Status Badge - Mobile */
+.movie-detail-hero .container > div:last-child > div:first-child > div:last-child {
+    padding: 6px 14px !important;
+    font-size: 12px !important;
+}
+
+/* Quick Info Chips - Horizontal Scroll */
+.movie-detail-hero .container > div:last-child > div:last-child {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-snap-type: x mandatory !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    margin-top: 10px !important;
+    padding: 0 0 8px 0 !important;
+    justify-content: flex-start !important;
+    scrollbar-width: none !important;
+    width: 100%;
+}
+
+.movie-detail-hero .container > div:last-child > div:last-child::-webkit-scrollbar {
+    display: none !important;
+}
+
+.movie-detail-hero .container > div:last-child > div:last-child > div,
+.movie-detail-hero .container > div:last-child > div:last-child > button {
+    flex: 0 0 auto !important;
+    scroll-snap-align: start !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+}
+
+.movie-detail-hero .container > div:last-child > div:last-child button {
+    min-height: 36px !important;
+}
+
+/* Mobile Content Grid - Stack Vertically */
+.movie-detail-content {
+    margin: 0 !important;
+    padding: 24px 24px 90px 24px !important; /* Desktop-style 1.5rem padding */
+}
+
+.movie-detail-content > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+}
+
+/* Main Content - Mobile (Desktop-style padding) */
+.movie-detail-content > div > div:first-child {
+    padding: 0 !important;
+}
+
+.movie-detail-content > div > div:first-child section {
+    margin-bottom: 24px !important;
+    padding: 0 !important;
+}
+
+.movie-detail-content > div > div:first-child section h2 {
+    font-size: 17px !important;
+    margin-bottom: 10px !important;
+    padding: 0 !important;
+}
+
+.movie-detail-content > div > div:first-child section h2 i {
+    font-size: 15px !important;
+}
+
+/* Overview Section - Mobile (Desktop-style) */
+.movie-detail-content > div > div:first-child section p {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    padding: 0 !important;
+}
+
+/* Hide the full overview block on mobile (mini-hero handles it) */
+.overview-section {
+    display: none !important;
+}
+
+/* Genres - Mobile Horizontal Scroll */
+.movie-detail-content > div > div:first-child section > div {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 8px !important;
+    scrollbar-width: none !important;
+}
+
+.movie-detail-content > div > div:first-child section > div::-webkit-scrollbar {
+    display: none !important;
+}
+
+.movie-detail-content > div > div:first-child section > div span {
+    flex: 0 0 auto !important;
+    padding: 7px 13px !important;
+    font-size: 12px !important;
+}
+
+/* Cast Grid - Neat Rows on Mobile */
+.cast-neat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 12px;
+    padding: 10px 0;
+}
+
+.cast-neat-grid .cast-member-card:nth-child(n+5) {
+    display: none;
+}
+
+.cast-member-card {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-primary);
+    padding: 10px 8px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-height: 140px;
+}
+
+.cast-avatar-wrapper {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.02));
+    position: relative;
+    margin-bottom: 8px;
+    border: 2px solid rgba(229, 9, 20, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 14px rgba(229, 9, 20, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.cast-initials {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.cast-info-neat .actor-name {
+    font-size: 11px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    max-width: 110px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cast-info-neat .character-name {
+    font-size: 9px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .cast-neat-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .cast-neat-grid .cast-member-card:nth-child(n+7) {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .cast-avatar-wrapper {
+        width: 96px;
+        height: 96px;
+    }
+}
+
+/* Similar Movies - 2 Columns on Mobile */
+.movie-detail-content > div > div:first-child section:last-child > div {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+}
+
+/* Sidebar - Mobile (Appears First/Top) */
+.movie-detail-content > div > div:last-child {
+    padding: 0 !important;
+    margin-bottom: 24px !important;
+}
+
+.movie-detail-content > div > div:last-child > div,
+.movie-detail-content > div > div:last-child > a {
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.movie-detail-content > div > div:last-child h3 {
+    font-size: 15px !important;
+    margin-bottom: 12px !important;
+}
+
+.movie-detail-content > div > div:last-child h3 i {
+    font-size: 14px !important;
+}
+
+/* Where to Watch - Mobile Full Width Buttons (Desktop-style) */
+.where-watch {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 10px !important;
+    padding: 16px !important;
+    margin: 0 !important;
+}
+
+.ott-btn {
+    padding: 12px 14px !important;
+    font-size: 13px !important;
+    min-height: 50px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    -webkit-tap-highlight-color: transparent !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.2s ease !important;
+}
+
+.ott-btn:active {
+    transform: scale(0.98) !important;
+    opacity: 0.85 !important;
+}
+
+.ott-btn > div {
+    gap: 10px !important;
+}
+
+.ott-btn-logo {
+    width: 28px !important;
+    height: 28px !important;
+}
+
+.ott-badge-pill {
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+}
+
+/* Movie Details Card - Mobile */
+.movie-detail-content > div > div:last-child > div:nth-child(2) > div {
+    gap: 12px !important;
+}
+
+.movie-detail-content > div > div:last-child > div:nth-child(2) > div > div p:first-child {
+    font-size: 10px !important;
+}
+
+.movie-detail-content > div > div:last-child > div:nth-child(2) > div > div p:not(:first-child),
+.movie-detail-content > div > div:last-child > div:nth-child(2) > div > div span {
+    font-size: 14px !important;
+}
+
+/* Rating Bar - Mobile */
+.movie-detail-content > div > div:last-child > div:nth-child(2) > div > div > div:first-child {
+    height: 4px !important;
+}
+
+/* User Actions - Mobile Grid */
+.movie-detail-content > div > div:last-child > div:nth-child(3) > div {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+}
+
+.movie-detail-content > div > div:last-child > div:nth-child(3) button {
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    min-height: 42px !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.movie-detail-content > div > div:last-child > div:nth-child(3) button:active {
+    transform: scale(0.96) !important;
+}
+
+/* Back Button - Mobile */
+.movie-detail-content > div > div:last-child > a:last-child {
+    padding: 12px !important;
+    font-size: 13px !important;
+    gap: 8px !important;
+    min-height: 46px !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.movie-detail-content > div > div:last-child > a:last-child:active {
+    transform: scale(0.98) !important;
+}
+
+/* Updated timestamp text size */
+.movie-detail-content > div > div:last-child > div:nth-child(2) > div:last-child p {
+    font-size: 11px !important;
+}
+
+/* Trailer Modal - Mobile Optimized */
+.trailer-modal {
+    padding: 0 !important;
+}
+
+.trailer-modal.is-open {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.trailer-modal__dialog {
+    max-width: 100vw !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    height: 100vh !important;
+}
+
+.trailer-modal__close {
+    top: 10px !important;
+    right: 10px !important;
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 18px !important;
+    z-index: 10 !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    border-radius: 50% !important;
+}
+
+.trailer-modal__frame {
+    height: 100% !important;
+    border-radius: 0 !important;
+}
+
+.trailer-modal__frame iframe {
+    height: 100% !important;
+    width: 100% !important;
+}
+
+/* ============ RESPONSIVE BREAKPOINTS ============ */
+
+/* TABLET (768px and above) */
+@media (min-width: 768px) {
+    .mobile-only {
+        display: none;
+    }
+
+    .desktop-only {
+        display: block;
+    }
+
+    .bottom-nav-bar {
+        display: none !important;
+    }
+    
+    .main-content {
+        padding-bottom: 0;
+    }
+    
+    .hero-banner.desktop-only {
+        display: block;
+    }
+    
+    .row-section:first-of-type {
+        padding-top: 0 !important;
+    }
+    
+    /* Hide navbar search on home page (hero has search) */
+    .nav-search.hide-on-desktop {
+        display: none;
+    }
+    
+    .site-footer,
+    .cta-section {
+        display: block;
+    }
+    
+    .movie-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 18px !important;
+    }
+    
+    .carousel-row .poster-card {
+        flex: 0 0 160px;
+    }
+    
+    .horizontal-scroll .poster-card {
+        flex: 0 0 160px;
+    }
+    
+    .carousel-arrow {
+        display: flex !important;
+    }
+    
+    .discover-page {
+        padding-bottom: 40px;
+    }
+    
+    .hero-title {
+        font-size: 36px !important;
+    }
+    
+    .hero-subtitle {
+        font-size: 16px !important;
+    }
+    
+    .discover-title {
+        font-size: 30px;
+    }
+}
+
+/* ============ MOBILE TOP NAVIGATION ============ */
+.top-nav {
+    height: 60px !important;
+    padding: 0 !important;
+}
+
+.nav-container {
+    padding: 0 16px !important;
+    gap: 12px !important;
+}
+
+.nav-logo a {
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px;
+}
+
+.nav-toggle.mobile {
+    width: 44px;
+    height: 44px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px !important;
+    color: #ffffff !important;
+    background: none;
+    border: none;
+    position: relative;
+    z-index: 10000 !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-menu {
+    padding: 16px 0;
+}
+
+.mobile-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mobile-menu ul li {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobile-menu ul li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    min-height: 50px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-menu ul li a:active {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-menu ul li a i {
+    font-size: 16px;
+    color: var(--text-secondary);
+    width: 20px;
+}
+
+/* ============ MOBILE EMPTY STATES ============ */
+.empty-state {
+    padding: 60px 24px !important;
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 48px !important;
+    margin-bottom: 16px !important;
+}
+
+.empty-state h2 {
+    font-size: 20px !important;
+    margin-bottom: 8px !important;
+}
+
+.empty-state p {
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+}
+
+/* ============ MOBILE LOADING STATES ============ */
+.loading-skeleton {
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.05) 0%, 
+        rgba(255, 255, 255, 0.1) 50%, 
+        rgba(255, 255, 255, 0.05) 100%);
+    background-size: 200% 100%;
+    border-radius: 8px;
+}
+
+/* ============ MOBILE TYPOGRAPHY ============ */
+h1 {
+    font-size: 24px !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.5px !important;
+}
+
+h2 {
+    font-size: 20px !important;
+    line-height: 1.3 !important;
+}
+
+h3 {
+    font-size: 18px !important;
+    line-height: 1.3 !important;
+}
+
+p {
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+}
+
+/* ============ MOBILE TOUCH OPTIMIZATIONS ============ */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+a, button, .clickable {
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+    touch-action: manipulation;
+}
+
+/* Smooth scrolling for iOS */
+.horizontal-scroll,
+.carousel-container,
+.filter-chips-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* ============ DESKTOP MOVIE DETAIL PAGE - RESTORE ORIGINAL ============ */
+/* Reset mobile styles for desktop/tablet */
+@media (min-width: 768px) {
+    .movie-detail-hero {
+        height: 450px !important;
+    }
+    
+    .movie-detail-hero img {
+        opacity: 0.35 !important;
+    }
+    
+    .movie-detail-hero > div:last-child {
+        padding: 3rem 2rem !important;
+    }
+    
+    .movie-detail-hero .container {
+        display: grid !important;
+        grid-template-columns: 220px 1fr !important;
+        gap: 2.5rem !important;
+        flex-direction: row !important;
+        align-items: flex-end !important;
+    }
+    
+    .movie-detail-hero .container > div:first-child {
+        width: 100% !important;
+    }
+    
+    .movie-detail-hero .container > div:first-child img {
+        border: 3px solid rgba(255, 255, 255, 0.25) !important;
+    }
+    
+    .movie-detail-hero .container > div:last-child {
+        text-align: left !important;
+    }
+    
+    .movie-detail-hero h1 {
+        font-size: 2.8rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .movie-detail-hero .container > div:last-child > p {
+        font-size: 1rem !important;
+    }
+    
+    .movie-detail-hero .container > div:last-child > div:first-child {
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 1.5rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .movie-detail-hero .container > div:last-child > div:first-child > div:first-child {
+        flex: 1 !important;
+    }
+    
+    .movie-detail-hero .container > div:last-child > div:first-child > div:last-child {
+        padding: 0.75rem 1.5rem !important;
+        font-size: 1rem !important;
+    }
+    
+    .movie-detail-hero .container > div:last-child > div:last-child {
+        overflow-x: visible !important;
+        flex-wrap: wrap !important;
+        margin-top: 1.5rem !important;
+        gap: 1rem !important;
+        justify-content: flex-start !important;
+        scrollbar-width: auto !important;
+    }
+    
+    .movie-detail-hero .container > div:last-child > div:last-child > div,
+    .movie-detail-hero .container > div:last-child > div:last-child > button {
+        flex: 0 1 auto !important;
+        padding: 0.6rem 1.2rem !important;
+        font-size: inherit !important;
+    }
+    
+    .movie-detail-content {
+        padding: 3rem 0 !important;
+    }
+    
+    .movie-detail-content > div {
+        display: grid !important;
+        grid-template-columns: 1fr 380px !important;
+        flex-direction: row !important;
+        gap: 3rem !important;
+    }
+    
+    .movie-detail-content > div > div:first-child {
+        padding: 0 !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section {
+        margin-bottom: 3.5rem !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section h2 {
+        font-size: 1.4rem !important;
+        margin-bottom: 1.2rem !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section h2 i {
+        font-size: 1.3rem !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section p {
+        font-size: 1.05rem !important;
+        line-height: 1.9 !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section > div {
+        overflow-x: visible !important;
+        flex-wrap: wrap !important;
+        gap: 0.75rem !important;
+        scrollbar-width: auto !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section > div span {
+        padding: 0.6rem 1.2rem !important;
+        font-size: 0.95rem !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section > div[style*="grid"] {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+        gap: 1.2rem !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section > div[style*="grid"] > div,
+    .movie-detail-content > div > div:first-child section > div[style*="grid"] > a {
+        padding: 1.2rem !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section > div[style*="grid"] > div > div:first-child,
+    .movie-detail-content > div > div:first-child section > div[style*="grid"] > a > div:first-child > div:first-child {
+        width: 60px !important;
+        height: 60px !important;
+        margin: 0 auto 0.8rem !important;
+        font-size: 1.5rem !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section > div[style*="grid"] p:first-of-type {
+        font-size: 0.95rem !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section > div[style*="grid"] p:last-of-type {
+        font-size: 0.8rem !important;
+    }
+    
+    .movie-detail-content > div > div:first-child section:last-child > div {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+        gap: 1.5rem !important;
+    }
+    
+    .movie-detail-content > div > div:last-child {
+        padding: 0 !important;
+    }
+    
+    .movie-detail-content > div > div:last-child > div,
+    .movie-detail-content > div > div:last-child > a {
+        padding: 1.8rem !important;
+        margin-bottom: 2rem !important;
+    }
+    
+    .movie-detail-content > div > div:last-child h3 {
+        font-size: 1.2rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .ott-btn {
+        padding: inherit !important;
+        font-size: inherit !important;
+        min-height: auto !important;
+    }
+    
+    .ott-btn:active {
+        transform: none !important;
+        opacity: 1 !important;
+    }
+    
+    .ott-btn-logo {
+        width: inherit !important;
+        height: inherit !important;
+    }
+    
+    .trailer-modal__dialog {
+        max-width: 90vw !important;
+        width: auto !important;
+        height: auto !important;
+        border-radius: 12px !important;
+    }
+    
+    .trailer-modal__close {
+        top: 16px !important;
+        right: 16px !important;
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 24px !important;
+    }
+    
+    .trailer-modal__frame {
+        border-radius: 12px !important;
+    }
+}
+
+/* DESKTOP (1024px and above) */
+@media (min-width: 1024px) {
+    .movie-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 20px !important;
+    }
+    
+    .carousel-row .poster-card {
+        flex: 0 0 170px;
+    }
+    
+    .horizontal-scroll .poster-card {
+        flex: 0 0 170px;
+    }
+    
+    .filter-chips-container {
+        padding-bottom: 20px;
+    }
+    
+    .sidebar-toggle {
+        display: inline-flex !important;
+    }
+    
+    .filters-sidebar {
+        position: relative !important;
+        display: block !important;
+        height: auto !important;
+        max-height: none !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        z-index: auto !important;
+        animation: none !important;
+        box-shadow: none !important;
+        overflow-y: visible !important;
+        width: 250px !important;
+        margin-right: 20px;
+    }
+    
+    .sidebar-header {
+        display: none;
+    }
+    
+    .sidebar-close {
+        display: none;
+    }
+    
+    .filters-layout {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .discover-layout {
+        display: flex !important;
+        gap: 20px;
+    }
+}
+
+/* ============ UTILITY ============ */
+.close-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+
+@media (max-width: 600px) {
+    .movie-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.8rem;
+        padding: 0 0.75rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .action-btn,
+    .ott-button,
+    .ott-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --nav-height: 70px;
+    }
+
+    .nav-container {
+        padding: 0 1rem;
+        gap: 1rem;
+    }
+
+    .nav-logo a {
+        font-size: 1.4rem;
+        font-weight: 800;
+        min-width: 40px;
+    }
+
+    .nav-search {
+        flex: 1;
+        max-width: none;
+    }
+
+    .nav-search input {
+        font-size: 0.9rem;
+    }
+
+    .nav-links.desktop {
+        display: none;
+    }
+
+    .nav-toggle.mobile {
+        display: block;
+    }
+
+    .mobile-menu.active {
+        display: block;
+    }
+
+    .section-header {
+        padding: 0 1rem;
+    }
+
+    .movie-grid {
+        padding: 0 1rem;
+    }
+
+    .filter-pills {
+        padding: 0 1rem;
+    }
+
+    .container {
+        padding: 0 1rem;
+    }
+
+    .hero {
+        height: 300px;
+        margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero .search-form input {
+        width: 90vw;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 600px) {
+    :root {
+        --nav-height: 60px;
+    }
+
+    .nav-container {
+        padding: 0 0.75rem;
+    }
+
+    .nav-search {
+        max-width: 100%;
+    }
+
+    .section-header {
+        padding: 0 0.5rem;
+    }
+
+    .hero {
+        height: 250px;
+    }
+
+    .hero h1 {
+        font-size: 1.4rem;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .hero-search-form {
+        flex-direction: column;
+    }
+    
+    .hero-search-form input,
+    .hero-search-form button {
+        border-radius: 6px;
+    }
+    
+    .poster-card {
+        width: 140px;
+    }
+    
+    .row-title {
+        font-size: 1.4rem;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .footer-links {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 1024px) {
+    .discover-layout {
+        flex-direction: column;
+    }
+
+    .filters-sidebar {
+        width: 100%;
+        position: static;
+        margin-bottom: 2rem;
+    }
+
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .discover-page {
+        padding: var(--nav-height) 1rem 3rem;
+    }
+
+    .discover-title {
+        font-size: 1.8rem;
+    }
+
+    .filter-chips-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-chips-scroll {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .filters-top-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .sidebar-toggle {
+        width: auto;
+        justify-content: center;
+    }
+
+    .filters-sidebar {
+        display: none !important;
+        position: fixed;
+        left: 0;
+        top: var(--nav-height);
+        right: 0;
+        width: 100%;
+        max-height: calc(100vh - var(--nav-height));
+        overflow-y: auto;
+        border-radius: 0;
+        z-index: 99;
+    }
+
+    .sidebar-close {
+        display: block;
+    }
+
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+    
+    .results-count {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .discover-title {
+        font-size: 1.5rem;
+    }
+
+    .discover-title i {
+        display: none;
+    }
+
+    .movie-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+    
+    .platform-badges {
+        top: 0.3rem;
+        right: 0.3rem;
+        gap: 0.2rem;
+    }
+    
+    .platform-badge {
+        width: 24px;
+        height: 24px;
+        font-size: 0.6rem;
+    }
+    
+    .hero-title {
+        font-size: 2.2rem;
+    }
+    
+    .hero-search-form {
+        flex-direction: column;
+    }
+    
+    .hero-search-form input,
+    .hero-search-form button {
+        border-radius: 6px;
+    }
+    
+    .hero-buttons {
+        flex-direction: column;
+    }
+    
+    .row-section {
+        padding: 3rem 0 1rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .modal-content {
+        width: 95%;
+        padding: 1rem;
+    }
+    
+    .modal-close {
+        top: 0.5rem;
+        right: 0.5rem;
+        font-size: 1.5rem;
+        width: 35px;
+        height: 35px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+    }
+
+    .modal-close {
+        right: -35px;
+        font-size: 28px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .movie-content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .movie-detail-content {
+        padding: 2rem 1.5rem !important;
+    }
+    
+    .movie-detail-hero .container {
+        padding: 0 1.5rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .movie-detail-hero .container {
+        padding: 0 1rem !important;
+    }
+}
+
+/* ============================================
+   HIDDEN GEMS SPECIAL STYLING
+   Gold/Purple gradient for discovery section
+   ============================================ */
+.hidden-gems-section {
+    background: linear-gradient(135deg, 
+        rgba(138, 43, 226, 0.15) 0%, 
+        rgba(218, 165, 32, 0.12) 50%, 
+        rgba(138, 43, 226, 0.15) 100%);
+    border-radius: 16px;
+    margin: 0 8px;
+    padding: 20px 0 !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.hidden-gems-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(218, 165, 32, 0.6), 
+        rgba(138, 43, 226, 0.6), 
+        transparent);
+}
+
+.hidden-gems-section .row-title {
+    color: rgba(218, 165, 32, 1);
+    text-shadow: 0 0 10px rgba(218, 165, 32, 0.3);
+}
+
+.hidden-gems-section .row-see-all {
+    color: rgba(218, 165, 32, 1);
+}
+
+.hidden-gems-section .poster-card {
+    transition: transform 0.3s ease;
+    scroll-snap-align: start;
+}
+
+.hidden-gems-section .poster-card:active {
+    transform: scale(0.95);
+}
+
+.hidden-gems-section .rating-badge {
+    background: linear-gradient(135deg, rgba(218, 165, 32, 0.9), rgba(255, 215, 0, 0.9));
+    color: #000;
+    font-weight: 700;
+}
+
+/* ============================================
+   MOBILE FOOTER
+   Clean, minimal footer for mobile view
+   ============================================ */
+.mobile-footer {
+    background: linear-gradient(to top, rgba(10, 10, 10, 1), rgba(15, 15, 15, 0.98));
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 32px 16px 24px 16px;
+    margin-top: 40px;
+    margin-bottom: 45px; /* Space for bottom nav */
+}
+
+.mobile-footer .footer-content {
+    max-width: 100%;
+    text-align: center;
+}
+
+.mobile-footer .footer-brand {
+    margin-bottom: 20px;
+}
+
+.footer-links-mobile {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin: 20px 0;
+    padding: 16px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer-links-mobile a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.footer-links-mobile a:active {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--accent-primary);
+}
+
+.footer-bottom-mobile {
+    margin-top: 12px;
+}
+
+.footer-bottom-mobile p {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+    margin: 0;
+}
+
+/* Hide desktop footer on mobile */
+.site-footer {
+    display: none !important;
+}
+/* ================================================
+   MOVIE DETAIL PAGE - MOBILE ENHANCEMENTS
+   Release dates, Key details, Additional info
+   ================================================ */
+
+/* Release Dates Card - Mobile Optimized */
+.movie-detail-content > div > div:last-child > div[style*="calendar"] {
+    padding: 14px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="calendar"] h3 {
+    font-size: 14px !important;
+    margin-bottom: 12px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="calendar"] > div[style*="padding"] {
+    padding: 12px !important;
+    margin-bottom: 10px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="calendar"] > div[style*="padding"] > div:first-child {
+    font-size: 11px !important;
+    margin-bottom: 6px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="calendar"] > div[style*="padding"] > div:nth-child(2) {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+}
+
+/* Key Details Card - Mobile Optimized */
+.movie-detail-content > div > div:last-child > div[style*="sparkles"] {
+    padding: 14px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="sparkles"] h3 {
+    font-size: 14px !important;
+    margin-bottom: 12px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="sparkles"] > div {
+    gap: 10px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="sparkles"] > div > div {
+    margin-bottom: 4px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="sparkles"] > div > div > div:first-child {
+    font-size: 11px !important;
+    margin-bottom: 4px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="sparkles"] > div > div > div:nth-child(2),
+.movie-detail-content > div > div:last-child > div[style*="sparkles"] > div > div > div:nth-child(3) {
+    font-size: 13px !important;
+    padding: 6px 10px !important;
+}
+
+/* Progress Bar - Mobile Size */
+.movie-detail-content > div > div:last-child > div[style*="sparkles"] .progress-bar {
+    height: 4px !important;
+    margin-top: 6px !important;
+}
+
+/* Movie Details Card - Mobile Optimized */
+.movie-detail-content > div > div:last-child > div[style*="info-circle"] {
+    padding: 14px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="info-circle"] h3 {
+    font-size: 14px !important;
+    margin-bottom: 12px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="info-circle"] > div {
+    gap: 10px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="info-circle"] p {
+    font-size: 12px !important;
+    margin: 8px 0 !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="info-circle"] > div > div > p:first-of-type {
+    font-size: 11px !important;
+    margin-bottom: 4px !important;
+}
+
+.movie-detail-content > div > div:last-child > div[style*="info-circle"] > div > div > p:last-of-type,
+.movie-detail-content > div > div:last-child > div[style*="info-circle"] > div > div span {
+    font-size: 13px !important;
+}
+
+/* OTT Platform Buttons - Mobile Optimized */
+.movie-detail-content > div > div:last-child .ott-btn {
+    padding: 12px 14px !important;
+    font-size: 13px !important;
+    margin-bottom: 10px !important;
+    flex-wrap: wrap !important;
+}
+
+.movie-detail-content > div > div:last-child .ott-btn > div {
+    gap: 10px !important;
+}
+
+.movie-detail-content > div > div:last-child .ott-btn img {
+    max-height: 18px !important;
+}
+
+.movie-detail-content > div > div:last-child .ott-btn span {
+    font-size: 12px !important;
+}
+
+.movie-detail-content > div > div:last-child .ott-badge-pill {
+    font-size: 9px !important;
+    padding: 3px 8px !important;
+}
+
+/* User Actions Card - Mobile */
+.movie-detail-content > div > div:last-child button[id*="wishlist"],
+.movie-detail-content > div > div:last-child button[id*="share"] {
+    padding: 12px 14px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+    gap: 8px !important;
+}
+
+/* Back Button - Mobile */
+.movie-detail-content > div > div:last-child a[href*="history"] {
+    padding: 12px 14px !important;
+    font-size: 13px !important;
+    margin-top: 12px !important;
+}
+
+/* Section Headings - Mobile */
+.movie-detail-content h2 {
+    font-size: 16px !important;
+    margin-bottom: 12px !important;
+}
+
+.movie-detail-content h2 i {
+    font-size: 14px !important;
+    margin-right: 6px !important;
+}
+
+/* Overview & Description - Mobile */
+.movie-detail-content > div > div:first-child section p {
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+}
+
+/* Genre Tags - Mobile */
+.movie-detail-content > div > div:first-child section > div span {
+    padding: 7px 12px !important;
+    font-size: 12px !important;
+    margin-bottom: 8px !important;
+    display: inline-block !important;
+}
+
+/* Language Badges - Mobile */
+.movie-detail-content > div > div:first-child section > div > span[style*="inline-flex"] {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    margin-bottom: 8px !important;
+}
+
+.movie-detail-content > div > div:first-child section > div > span[style*="PRIMARY"] {
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+    right: 6px !important;
+    top: -6px !important;
+}
+
+/* Available Languages Note - Mobile */
+.movie-detail-content > div > div:first-child section > p[style*="color"] {
+    font-size: 12px !important;
+    padding: 10px 12px !important;
+    margin-top: 10px !important;
+}
+
+/* Similar Movies Grid - Mobile Responsive */
+.movie-detail-content > div > div:first-child section:last-child > div {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    margin-top: 12px !important;
+}
+
+.movie-detail-content > div > div:first-child section:last-child > div > a > div:last-child p {
+    font-size: 12px !important;
+}
+
+/* Metadata Footer - Mobile */
+.movie-detail-content > div > div:last-child > div[style*="margin-top"] p {
+    font-size: 11px !important;
+    margin: 6px 0 !important;
+}
+
+/* Audio & Language Badges - Mobile */
+.movie-detail-content > div > div:first-child section > div > span[style*="display: inline-flex"] {
+    padding: 7px 12px !important;
+    font-size: 11px !important;
+    margin-bottom: 8px !important;
+}
+
+/* Cast Grid Title - Mobile */
+.movie-detail-content > div > div:first-child section > h2 {
+    margin-bottom: 12px !important;
+    padding: 0 !important;
+}
+
+/* Sidebar Cards - Mobile Responsiveness */
+@media (max-width: 768px) {
+    .movie-content-grid > div:nth-child(2) {
+        order: 2;
+        margin-top: 2rem;
+        border-top: 1px solid var(--border);
+        padding-top: 2rem;
+    }
+    
+    .movie-content-grid > div:nth-child(2) > div {
+        margin-bottom: 1.5rem !important;
+        padding: 1.2rem !important;
+    }
+    
+    .movie-content-grid > div:nth-child(2) h3 {
+        font-size: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+}
+
+/* Sidebar Cards - Very Small Mobile */
+@media (max-width: 480px) {
+    .movie-content-grid > div:nth-child(2) > div {
+        padding: 1rem !important;
+        border-radius: 12px;
+    }
+    
+    .movie-content-grid > div:nth-child(2) > div > div {
+        font-size: 0.9rem !important;
+    }
+    
+    /* OTT Buttons in sidebar - mobile sized */
+    .movie-content-grid > div:nth-child(2) .ott-btn {
+        padding: 0.8rem 1rem !important;
+        margin-bottom: 0.6rem !important;
+    }
+    
+    /* Release dates text sizing */
+    .movie-content-grid > div:nth-child(2) [style*="calendar"] {
+        font-size: 0.9rem !important;
+    }
+    
+    .movie-content-grid > div:nth-child(2) [style*="Theatrical"] {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* ============ iBOMMA MOBILE WATCH BUTTONS ============ */
+.watch-links-section {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+    margin: 20px 16px;
+    padding: 0;
+}
+
+.watch-links-section h2 {
+    grid-column: 1 / -1;
+    font-size: 16px;
+    margin: 0 0 10px 0;
+    font-weight: 600;
+}
+
+.watch-btn-modern,
+.watch-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: center;
+    transition: all 0.25s ease;
+    border: none;
+    gap: 8px;
+}
+
+.watch-btn-modern {
+    background: #222 !important;
+    color: #fff !important;
+    text-decoration: none;
+}
+
+.watch-btn-modern:active,
+.watch-btn-modern:hover {
+    background: #e50914 !important;
+    transform: scale(0.98);
+}
+
+.watch-btn-modern i {
+    font-size: 16px;
+}
+
+/* Netflix specific */
+/* Unified platform button style - lightweight iBomma look */
+.platform-netflix .watch-button,
+.platform-prime .watch-button,
+.platform-amazon .watch-button,
+.platform-hotstar .watch-button,
+.platform-zee5 .watch-button,
+.platform-aha .watch-button,
+.platform-sony .watch-button { 
+    background: #222 !important;
+    border-left: 3px solid var(--accent-primary) !important;
+    color: #fff !important;
+}
+
+.not-available {
+    grid-column: 1 / -1;
+    padding: 20px;
+    text-align: center;
+    color: #999;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+/* ============ iBOMMA MOBILE MOVIE HEADER ============ */
+.movie-header-mini {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+}
+
+.mini-poster {
+    width: 100px;
+    height: 150px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #222;
+}
+
+.mini-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.mini-info h1 {
+    font-size: 18px;
+    margin: 0 0 6px 0;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
+.mini-info p {
+    font-size: 12px;
+    color: #999;
+    margin: 0;
+}
+
+/* Movie brief overview - mobile */
+.movie-brief {
+    padding: 0 16px 20px 16px;
+}
+
+.movie-brief h3 {
+    font-size: 14px;
+    margin: 0 0 10px 0;
+    font-weight: 600;
+}
+
+.movie-brief p {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #ccc;
+    margin: 0;
+}
+
+/* Minimize detail sections on mobile */
+@media (max-width: 640px) {
+    .movie-detail-hero {
+        display: none !important;
+    }
+    
+    .watch-links-section {
+        margin-top: 0 !important;
+    }
+    
+    /* Cast grid tuning for small screens */
+    .cast-neat-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}

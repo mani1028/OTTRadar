@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OTT Radar Admin{% endblock %}</title>
+    <!-- Fonts & Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Admin CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <nav class="admin-sidebar">
+        <a href="{{ url_for('admin') }}" class="admin-sidebar-header">
+            <i class="fas fa-satellite-dish"></i> OTT RADAR
+        </a>
+        
+        <ul class="admin-nav">
+            <li class="nav-item">
+                <a href="{{ url_for('admin') }}" class="nav-link {% if request.endpoint == 'admin' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('admin_inventory') }}" class="nav-link {% if request.endpoint == 'admin_inventory' %}active{% endif %}">
+                    <i class="fas fa-boxes"></i> Inventory
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('admin_bulk_ott') }}" class="nav-link {% if request.endpoint == 'admin_bulk_ott' %}active{% endif %}">
+                    <i class="fas fa-list"></i> Bulk OTT Editor
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('admin_submissions') }}" class="nav-link {% if request.endpoint == 'admin_submissions' %}active{% endif %}">
+                    <i class="fas fa-user-edit"></i> User Requests
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('admin_operations') }}" class="nav-link {% if request.endpoint == 'admin_operations' %}active{% endif %}">
+                    <i class="fas fa-cogs"></i> Scripts & Ops
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ url_for('admin_movie_search') }}" class="nav-link {% if request.endpoint in ['admin_movie_search', 'admin_movie_edit'] %}active{% endif %}">
+                    <i class="fas fa-edit"></i> Content Editor
+                </a>
+            </li>
+
+           <li class="nav-item">
+                <a href="{{ url_for('admin_affiliate_manager') }}" class="nav-link {% if request.endpoint == 'admin_affiliate_manager' %}active{% endif %}">
+                    <i class="fas fa-money-bill-wave"></i> Affiliates
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{{ url_for('admin_audit_log') }}" class="nav-link {% if request.endpoint == 'admin_audit_log' %}active{% endif %}">
+                    <i class="fas fa-history"></i> Audit Logs
+                </a>
+            </li>
+        </ul>
+
+        <div class="admin-sidebar-footer">
+            <a href="{{ url_for('admin_logout') }}" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+            <a href="{{ url_for('index') }}" class="btn-logout" style="margin-top:5px; background:none;">
+                <i class="fas fa-external-link-alt"></i> View Site
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Top Header -->
+        <header class="admin-header">
+            <div class="header-left">
+                <h2 style="margin:0; font-size:1.2rem;">{% block header_title %}Dashboard{% endblock %}</h2>
+            </div>
+            <div class="header-right" style="display:flex; align-items:center; gap:15px;">
+                <span style="font-size:0.9rem; color:var(--text-muted);">
+                    Logged in as <strong>{{ session.get('admin_username', 'Admin') }}</strong>
+                </span>
+            </div>
+        </header>
+
+        <!-- Scrollable Content Area -->
+        <div class="admin-content-scroll">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <i class="fas fa-info-circle"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/admin/admin_actions.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

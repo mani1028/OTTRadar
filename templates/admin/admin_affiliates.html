@@ -1,0 +1,238 @@
+{% extends "base_admin.html" %}
+
+{% block title %}Affiliate Monetization Manager - Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 1rem;">
+    <!-- Page Header -->
+    <div style="margin-bottom: 2rem; border-bottom: 1px solid #333; padding-bottom: 1rem;">
+        <h1 style="margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 1rem;">
+            <i class="fas fa-dollar-sign" style="color: #4caf50;"></i> Affiliate Monetization
+        </h1>
+        <p style="color: var(--text-secondary); margin: 0;">Configure Prime Video & Apple Services affiliate links</p>
+    </div>
+
+    <!-- Status Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Amazon Status -->
+        <div style="background: linear-gradient(135deg, #FF9900 15%, #FFB84D 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+            <i class="fas fa-amazon" style="font-size: 2rem; opacity: 0.8; display: block; margin-bottom: 0.5rem;"></i>
+            <h3 style="margin: 0 0 0.25rem 0; font-size: 1.1rem;">Amazon Prime Video</h3>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">
+                {% if config.amazon_associate_id %}
+                <strong>{{ config.amazon_associate_id }}</strong>
+                {% else %}
+                <span style="color: #ffe0b2;">Not configured</span>
+                {% endif %}
+            </p>
+            <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; opacity: 0.85;">
+                Status: {% if config.amazon_enabled %}<span style="color: #c3e9ae;">✓ Enabled</span>{% else %}<span style="color: #ffb3ba;">✗ Disabled</span>{% endif %}
+            </p>
+        </div>
+
+        <!-- Apple Status -->
+        <div style="background: linear-gradient(135deg, #A2AAAD 15%, #C5C9CC 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+            <i class="fas fa-apple" style="font-size: 2rem; opacity: 0.8; display: block; margin-bottom: 0.5rem;"></i>
+            <h3 style="margin: 0 0 0.25rem 0; font-size: 1.1rem;">Apple TV+</h3>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">
+                {% if config.apple_affiliate_id %}
+                <strong>{{ config.apple_affiliate_id }}</strong>
+                {% else %}
+                <span style="color: #e8e8e8;">Not configured</span>
+                {% endif %}
+            </p>
+            <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; opacity: 0.85;">
+                Status: {% if config.apple_enabled %}<span style="color: #c3e9ae;">✓ Enabled</span>{% else %}<span style="color: #ffb3ba;">✗ Disabled</span>{% endif %}
+            </p>
+        </div>
+
+        <!-- Link Health -->
+        <div style="background: linear-gradient(135deg, #2196F3 15%, #64B5F6 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+            <i class="fas fa-link" style="font-size: 2rem; opacity: 0.8; display: block; margin-bottom: 0.5rem;"></i>
+            <h3 style="margin: 0 0 0.25rem 0; font-size: 1.1rem;">Link Health</h3>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">
+                {% if dead_link_count > 0 %}
+                <span style="color: #ffb3ba;"><strong>{{ dead_link_count }} Dead Links</strong></span>
+                {% else %}
+                <span style="color: #c3e9ae;">All links alive ✓</span>
+                {% endif %}
+            </p>
+            <form method="POST" action="{{ url_for('admin_affiliate_health_check') }}" style="margin-top: 1rem;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn-secondary">
+                    <i class="fas fa-sync"></i> Check Now
+                </button>
+            </form>
+        </div>
+
+        <!-- Price Drops -->
+        <div style="background: linear-gradient(135deg, #FF6B6B 15%, #FF8E8E 100%); padding: 1.5rem; border-radius: 8px; color: white;">
+            <i class="fas fa-chart-line" style="font-size: 2rem; opacity: 0.8; display: block; margin-bottom: 0.5rem;"></i>
+            <h3 style="margin: 0 0 0.25rem 0; font-size: 1.1rem;">Price Drops</h3>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;"><strong>{{ price_drop_count }}</strong> Detected</p>
+            <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; opacity: 0.85;">
+                <a href="{{ url_for('admin_price_drops') }}" style="color: white; text-decoration: underline;">View & Post →</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Configuration Form -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin-bottom: 2rem;">
+        <h2 style="margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-sliders-h"></i> Configuration
+        </h2>
+
+        <form method="POST" action="{{ url_for('admin_affiliate_update_config') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <!-- Amazon Configuration -->
+            <fieldset style="border: 1px solid var(--border); padding: 1.5rem; border-radius: 6px; margin-bottom: 1.5rem;">
+                <legend style="padding: 0 0.5rem; font-weight: 600; color: var(--accent-primary);">
+                    <i class="fas fa-amazon" style="margin-right: 0.5rem;"></i> Amazon Prime Video
+                </legend>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                            Associate ID
+                            <span style="color: #ff6b6b;">*</span>
+                        </label>
+                        <input type="text" name="amazon_associate_id" value="{{ config.amazon_associate_id }}" 
+                               placeholder="e.g., ottradarin-21"
+                               style="width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-body); color: var(--text-primary);">
+                        <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                            Format: yourname-countrycode (e.g., ottradarin-21)
+                        </small>
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                            Prime CTA Text
+                        </label>
+                        <input type="text" name="prime_cta_text" value="{{ config.prime_cta_text }}"
+                               placeholder="Watch on Prime Video"
+                               style="width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-body); color: var(--text-primary);">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 2rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="amazon_enabled" {% if config.amazon_enabled %}checked{% endif %}>
+                        <span>Enable Prime Video Affiliate Links</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="prime_channels_enabled" {% if config.prime_channels_enabled %}checked{% endif %}>
+                        <span>Enable Prime Channels (LG+, Discovery+, MGM+)</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <!-- Apple Configuration -->
+            <fieldset style="border: 1px solid var(--border); padding: 1.5rem; border-radius: 6px; margin-bottom: 1.5rem;">
+                <legend style="padding: 0 0.5rem; font-weight: 600; color: var(--accent-primary);">
+                    <i class="fas fa-apple" style="margin-right: 0.5rem;"></i> Apple TV+
+                </legend>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                            Apple Affiliate ID
+                        </label>
+                        <input type="text" name="apple_affiliate_id" value="{{ config.apple_affiliate_id }}"
+                               placeholder="Your Apple Affiliate ID"
+                               style="width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-body); color: var(--text-primary);">
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                            Campaign Token
+                        </label>
+                        <input type="text" name="apple_campaign_token" value="{{ config.apple_campaign_token }}"
+                               placeholder="e.g., ottradarin"
+                               style="width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-body); color: var(--text-primary);">
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                        Apple CTA Text
+                    </label>
+                    <input type="text" name="apple_cta_text" value="{{ config.apple_cta_text }}"
+                           placeholder="Add to Apple Library"
+                           style="width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-body); color: var(--text-primary); margin-bottom: 1rem;">
+                </div>
+
+                <div style="display: flex; gap: 2rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="apple_enabled" {% if config.apple_enabled %}checked{% endif %}>
+                        <span>Enable Apple TV+ Affiliate Links</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="apple_bundle_enabled" {% if config.apple_bundle_enabled %}checked{% endif %}>
+                        <span>Track Apple One Bundle Signups</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <!-- Advanced Settings -->
+            <fieldset style="border: 1px solid var(--border); padding: 1.5rem; border-radius: 6px; margin-bottom: 1.5rem;">
+                <legend style="padding: 0 0.5rem; font-weight: 600; color: var(--accent-primary);">
+                    <i class="fas fa-cog"></i> Advanced Settings
+                </legend>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                            Cookie Duration (Hours)
+                        </label>
+                        <input type="number" name="cookie_duration" value="{{ config.cookie_duration }}" min="12" max="72"
+                               style="width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-body); color: var(--text-primary);">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="link_health_check_enabled" {% if config.link_health_check_enabled %}checked{% endif %}>
+                        <span>Link Health Checks (Detect Dead Links)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="price_tracking_enabled" {% if config.price_tracking_enabled %}checked{% endif %}>
+                        <span>Price Drop Tracking (For Marketing)</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <!-- Submit -->
+            <div style="display: flex; gap: 1rem; padding-top: 1rem;">
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Configuration
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Smart CTA Preview -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem;">
+        <h2 style="margin: 0 0 1.5rem 0;">Smart CTA Preview</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            <!-- Prime CTA -->
+            <div style="padding: 1.5rem; background: linear-gradient(135deg, #FF9900 15%, #FFB84D 100%); border-radius: 6px; text-align: center; color: white;">
+                <h3 style="margin: 0 0 0.5rem 0;">Prime Video CTA</h3>
+                <p style="margin: 0 0 1rem 0; font-size: 0.95rem; color: rgba(0,0,0,0.2);">When movie available on Prime</p>
+                <button class="btn-secondary" type="button">
+                    {{ config.prime_cta_text }}
+                </button>
+            </div>
+
+            <!-- Apple CTA -->
+            <div style="padding: 1.5rem; background: linear-gradient(135deg, #A2AAAD 15%, #C5C9CC 100%); border-radius: 6px; text-align: center; color: white;">
+                <h3 style="margin: 0 0 0.5rem 0;">Apple TV+ CTA</h3>
+                <p style="margin: 0 0 1rem 0; font-size: 0.95rem; color: rgba(0,0,0,0.15);">When movie available on Apple</p>
+                <button class="btn-secondary" type="button">
+                    {{ config.apple_cta_text }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

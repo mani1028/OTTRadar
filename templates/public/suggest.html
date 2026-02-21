@@ -1,0 +1,203 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Request or Suggest - OTT Radar{% endblock %}
+
+{% block content %}
+<div class="mobile-only">
+    <section class="mobile-page-header">
+        <h1 class="mobile-page-title">Requests</h1>
+        <p class="mobile-page-subtitle">Ask for a movie or feature</p>
+    </section>
+</div>
+
+<section class="hero-banner desktop-only" style="min-height: 350px; background: linear-gradient(135deg, #141414 0%, #1a1a1a 100%);">
+    <div class="container" style="padding: 4rem 2rem; text-align: center;">
+        <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">Request or Suggest</h1>
+        <p style="font-size: 1.2rem; color: var(--text-secondary); margin: 0;">Help us make OTT Radar better for everyone</p>
+    </div>
+</section>
+
+<div class="container" style="padding: 3rem 2rem; max-width: 700px;">
+    
+    <!-- Toggle Switch -->
+    <div class="request-toggle" style="display: flex; justify-content: center; margin-bottom: 3rem; gap: 0; background: var(--bg-card); border-radius: 12px; padding: 0.5rem; border: 1px solid var(--border);">
+        <button type="button" id="movieToggle" class="toggle-btn active" onclick="switchTab('movie')" style="flex: 1; padding: 1rem 2rem; border: none; background: var(--accent-primary); color: white; font-weight: 600; font-size: 1rem; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+            🎬 Movie Request
+        </button>
+        <button type="button" id="featureToggle" class="toggle-btn" onclick="switchTab('feature')" style="flex: 1; padding: 1rem 2rem; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; font-size: 1rem; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+            💡 Suggest Feature
+        </button>
+    </div>
+
+    <!-- Movie Request Form -->
+    <form method="POST" id="movieForm" class="request-form" style="display: block;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="type" value="movie">
+        
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="movie_name" style="display: block; font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">Movie Name <span style="color: var(--accent-primary);">*</span></label>
+            <input type="text" id="movie_name" name="movie_name" placeholder="e.g., RRR, Pushpa, KGF" required style="width: 100%; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 1rem; transition: border 0.3s;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="language" style="display: block; font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">Language</label>
+            <select id="language" name="language" style="width: 100%; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 1rem;">
+                <option value="">Select Language</option>
+                <option value="Telugu">Telugu</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Tamil">Tamil</option>
+                <option value="Malayalam">Malayalam</option>
+                <option value="Kannada">Kannada</option>
+                <option value="English">English</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="platform" style="display: block; font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">Platform (if you know)</label>
+            <input type="text" id="platform" name="platform" placeholder="e.g., Netflix, Prime Video, Hotstar" style="width: 100%; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 1rem;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 2rem;">
+            <label for="notes" style="display: block; font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">Notes (optional)</label>
+            <textarea id="notes" name="notes" rows="4" placeholder="Any additional information..." style="width: 100%; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 1rem; resize: vertical;"></textarea>
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 1.25rem; background: var(--accent-primary); color: white; font-weight: 700; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+            <i class="fas fa-paper-plane"></i> Send Request
+        </button>
+    </form>
+
+    <!-- Feature Suggestion Form -->
+    <form method="POST" id="featureForm" class="request-form" style="display: none;">
+        <input type="hidden" name="type" value="feature">
+        
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="title" style="display: block; font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">Title <span style="color: var(--accent-primary);">*</span></label>
+            <input type="text" id="title" name="title" placeholder="Brief title for your suggestion" required style="width: 100%; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 1rem;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="description" style="display: block; font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">Description <span style="color: var(--accent-primary);">*</span></label>
+            <textarea id="description" name="description" rows="5" placeholder="Describe your suggestion in detail..." required style="width: 100%; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-primary); font-size: 1rem; resize: vertical;"></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 2rem;">
+            <label style="display: block; font-weight: 600; margin-bottom: 0.75rem; font-size: 1rem;">Category <span style="color: var(--accent-primary);">*</span></label>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; transition: all 0.3s; background: var(--bg-card);">
+                    <input type="radio" name="category" value="feature" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-primary);">
+                    <div>
+                        <strong>Feature</strong>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">New functionality or improvement</p>
+                    </div>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; transition: all 0.3s; background: var(--bg-card);">
+                    <input type="radio" name="category" value="ui" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-primary);">
+                    <div>
+                        <strong>UI/UX</strong>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">Design or usability improvement</p>
+                    </div>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; transition: all 0.3s; background: var(--bg-card);">
+                    <input type="radio" name="category" value="bug" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-primary);">
+                    <div>
+                        <strong>Bug Report</strong>
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">Something isn't working correctly</p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 1.25rem; background: var(--accent-primary); color: white; font-weight: 700; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+            <i class="fas fa-lightbulb"></i> Send Suggestion
+        </button>
+    </form>
+
+    <!-- Pro Tip -->
+    <div style="margin-top: 3rem; padding: 1.5rem; background: rgba(229, 9, 20, 0.1); border: 1px solid rgba(229, 9, 20, 0.3); border-radius: 8px; text-align: center;">
+        <p style="margin: 0; color: var(--text-secondary); font-size: 0.95rem;">
+            <i class="fas fa-info-circle" style="color: var(--accent-primary); margin-right: 0.5rem;"></i>
+            <strong>Pro Tip:</strong> We review all submissions and prioritize based on community interest!
+        </p>
+    </div>
+</div>
+
+<script>
+function switchTab(tab) {
+    const movieToggle = document.getElementById('movieToggle');
+    const featureToggle = document.getElementById('featureToggle');
+    const movieForm = document.getElementById('movieForm');
+    const featureForm = document.getElementById('featureForm');
+    
+    if (tab === 'movie') {
+        movieToggle.style.background = 'var(--accent-primary)';
+        movieToggle.style.color = 'white';
+        featureToggle.style.background = 'transparent';
+        featureToggle.style.color = 'var(--text-secondary)';
+        movieForm.style.display = 'block';
+        featureForm.style.display = 'none';
+    } else {
+        featureToggle.style.background = 'var(--accent-primary)';
+        featureToggle.style.color = 'white';
+        movieToggle.style.background = 'transparent';
+        movieToggle.style.color = 'var(--text-secondary)';
+        movieForm.style.display = 'none';
+        featureForm.style.display = 'block';
+    }
+}
+
+// Focus effects for inputs
+document.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('focus', function() {
+        this.style.borderColor = 'var(--accent-primary)';
+        this.style.outline = 'none';
+    });
+    el.addEventListener('blur', function() {
+        this.style.borderColor = 'var(--border)';
+    });
+});
+
+// Radio button hover effects
+document.querySelectorAll('label:has(input[type="radio"])').forEach(label => {
+    label.addEventListener('mouseenter', function() {
+        this.style.borderColor = 'var(--accent-primary)';
+        this.style.background = 'rgba(229, 9, 20, 0.05)';
+    });
+    label.addEventListener('mouseleave', function() {
+        if (!this.querySelector('input').checked) {
+            this.style.borderColor = 'var(--border)';
+            this.style.background = 'var(--bg-card)';
+        }
+    });
+});
+
+// Highlight selected radio option
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.querySelectorAll('label:has(input[name="category"])').forEach(l => {
+            l.style.borderColor = 'var(--border)';
+            l.style.background = 'var(--bg-card)';
+        });
+        if (this.checked) {
+            this.closest('label').style.borderColor = 'var(--accent-primary)';
+            this.closest('label').style.background = 'rgba(229, 9, 20, 0.05)';
+        }
+    });
+});
+
+// Button hover effects
+document.querySelectorAll('button[type="submit"]').forEach(btn => {
+    btn.addEventListener('mouseenter', function() {
+        this.style.background = 'var(--accent-hover)';
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 8px 20px rgba(229, 9, 20, 0.4)';
+    });
+    btn.addEventListener('mouseleave', function() {
+        this.style.background = 'var(--accent-primary)';
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = 'none';
+    });
+});
+</script>
+{% endblock %}

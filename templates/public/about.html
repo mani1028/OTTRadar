@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}About Us - OTT Radar{% endblock %}
+
+{% block content %}
+<section class="hero" style="min-height: 250px;">
+    <div class="hero-content">
+        <h1>About Us</h1>
+        <p>Never search OTT apps again.</p>
+    </div>
+</section>
+
+<div class="container" style="max-width: 800px; padding: 3rem 2rem;">
+    <div style="line-height: 1.8; color: var(--text-secondary);">
+        <h2 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.5rem;">Tagline</h2>
+        <p style="margin-bottom: 1.5rem;">
+            OTT Radar: Find it faster. Watch it smarter.
+        </p>
+
+        <h2 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.5rem;">Brand Story</h2>
+        <p style="margin-bottom: 1.5rem;">
+            OTT Radar was built to stop endless app switching. We scan platforms, surface availability instantly, and let you jump straight to watching.
+        </p>
+
+        <h2 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.5rem;">Why This Name</h2>
+        <p style="margin-bottom: 1.5rem;">
+            Like a radar detects signals, OTT Radar scans streaming services to locate where a movie or show is available.
+        </p>
+
+        <h2 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.5rem;">Logo Meaning</h2>
+        <p style="margin-bottom: 1.5rem;">
+            A radar sweep pinpoints the exact platform for a title. Fast, clear, and always on.
+        </p>
+
+        <h2 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.5rem;">What We Do</h2>
+        <p style="margin-bottom: 1.5rem;">
+            OTT Radar is a <strong style="color: var(--text-primary);">legal content aggregator</strong> that helps you discover where to watch Telugu movies across official streaming platforms. We don't host any content—we simply guide you to the right place.
+        </p>
+
+        <h2 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.5rem; margin-top: 2.5rem;">How It Works</h2>
+        <p style="margin-bottom: 1.5rem;">
+            We track movies available on official OTT platforms including:
+        </p>
+        <ul style="margin-bottom: 1.5rem; margin-left: 1.5rem; list-style: none;">
+            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.5rem;"></i> Netflix</li>
+            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.5rem;"></i> Amazon Prime Video</li>
+            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.5rem;"></i> Aha</li>
+            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.5rem;"></i> Disney+ Hotstar</li>
+            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.5rem;"></i> Zee5</li>
+            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check-circle" style="color: var(--accent-primary); margin-right: 0.5rem;"></i> Sun NXT</li>
+        </ul>
+
+        <h2 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.5rem; margin-top: 2.5rem;">Our Mission</h2>
+        <p style="margin-bottom: 1.5rem;">
+            Our mission is to make streaming discovery effortless while directing viewers to legitimate platforms that support creators.
+        </p>
+
+        <h2 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.5rem; margin-top: 2.5rem;">Not Finding a Movie?</h2>
+        <p style="margin-bottom: 1.5rem;">
+            If you can't find a movie in our database, use our <a href="{{ url_for('suggest') }}" style="color: var(--accent-primary); text-decoration: underline;">Request</a> feature. We'll add it to our tracking system and notify you when it becomes available on streaming platforms.
+        </p>
+
+        <div style="background: rgba(229, 9, 20, 0.1); border: 1px solid rgba(229, 9, 20, 0.3); border-radius: var(--radius-md); padding: 1.5rem; margin-top: 2.5rem;">
+            <h3 style="color: var(--accent-primary); margin-bottom: 0.75rem; font-size: 1.1rem;">
+                <i class="fas fa-shield-alt" style="margin-right: 0.5rem;"></i>100% Legal
+            </h3>
+            <p style="margin: 0; font-size: 0.95rem;">
+                We never host, stream, or distribute copyrighted content. We only provide information about where movies can be legally watched on official platforms.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

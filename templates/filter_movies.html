@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Discover Movies - OTT Radar{% endblock %}
+
+{% block content %}
+<div class="discover-page">
+    <div class="mobile-only">
+        <section class="mobile-page-header">
+            <h1 class="mobile-page-title">Discover</h1>
+            <p class="mobile-page-subtitle">Find your next favorite movie</p>
+        </section>
+    </div>
+
+    <!-- Title Section -->
+    <div class="discover-header desktop-only">
+        <h1 class="discover-title">
+            <i class="fas fa-film"></i>
+            Discover Movies
+        </h1>
+        <p class="discover-subtitle">Find your next favorite movie</p>
+    </div>
+
+    <!-- Quick Search Bar -->
+    <div class="discover-search-bar">
+        <form method="GET" class="search-form-discover">
+            <i class="fas fa-search"></i>
+            <input type="text" name="q" placeholder="Search movies..." value="{{ request.args.get('q', '') }}" class="search-input-discover">
+        </form>
+    </div>
+
+    <!-- Filter Chips Row -->
+    <div class="filter-chips-container">
+        <div class="filter-chips-scroll">
+            <!-- Language Chips -->
+            {% if lang_options %}
+            <div class="chip-group">
+                {% for lang in lang_options[:4] %}
+                <a href="?lang={{ lang }}" class="filter-chip {% if lang in (applied_filters.lang or []) %}filter-chip-active{% endif %}">
+                    <i class="fas fa-globe-americas"></i>
+                    {{ lang.upper() }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Platform Chips -->
+            {% if platform_options %}
+            <div class="chip-group">
+                {% for platform in platform_options[:4] %}
+                <a href="?platform={{ platform }}" class="filter-chip {% if platform in (applied_filters.platform or []) %}filter-chip-active{% endif %}">
+                    <i class="fas fa-play-circle"></i>
+                    {{ platform }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Quick Filter Chips -->
+            <div class="chip-group">
+                <a href="?min_rating=7.0" class="filter-chip {% if applied_filters.min_rating == 7.0 %}filter-chip-active{% endif %}">
+                    <i class="fas fa-star"></i>
+                    Top Rated
+                </a>
+                <!-- Removed YouTube Only filter chip -->
+            </div>
+        </div>
+
+        <!-- Advanced Filters Button + Results Count -->
+        <div class="filters-top-right">
+            <span class="results-count">{{ total|default(0) }} movies</span>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-sliders-h"></i>
+                Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Layout Container -->
+    <div class="discover-layout">
+        <!-- Overlay Backdrop (Mobile) -->
+        <div class="filters-overlay" id="filtersOverlay" style="display: none;"></div>
+
+        <!-- Bottom Sheet Drawer (Mobile) / Sidebar (Desktop) -->
+        <aside class="filters-sidebar" id="filtersSidebar" style="display: none;">
+            <div class="sidebar-header">
+                <h3>Filters</h3>
+                <button class="sidebar-close" id="sidebarClose" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form method="GET" action="{{ url_for('filter_movies') }}" class="filters-sidebar-form">
+                <!-- Language Filter -->
+                <div class="filter-section-sidebar">
+                    <label class="filter-label-sidebar">Language</label>
+                    <select name="lang" multiple class="filter-input-sidebar">
+                        <option value="">All Languages</option>
+                        {% for lang in lang_options %}
+                        <option value="{{ lang }}" {% if lang in (applied_filters.lang or []) %}selected{% endif %}>{{ lang.upper() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Platform Filter -->
+                <div class="filter-section-sidebar">
+                    <label class="filter-label-sidebar">Platform</label>
+                    <select name="platform" multiple class="filter-input-sidebar">
+                        <option value="">All Platforms</option>
+                        {% for platform in platform_options %}
+                        <option value="{{ platform }}" {% if platform in (applied_filters.platform or []) %}selected{% endif %}>{{ platform }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Rating Filter -->
+                <div class="filter-section-sidebar">
+                    <label class="filter-label-sidebar">Min Rating</label>
+                    <input type="number" name="min_rating" min="0" max="10" step="0.5" value="{{ applied_filters.min_rating }}" class="filter-input-sidebar">
+                </div>
+
+                <!-- Year Range -->
+                <div class="filter-section-sidebar">
+                    <label class="filter-label-sidebar">From Year</label>
+                    <input type="number" name="year_from" min="1900" max="2100" value="{{ applied_filters.year_from or '' }}" class="filter-input-sidebar">
+                </div>
+
+                <div class="filter-section-sidebar">
+                    <label class="filter-label-sidebar">To Year</label>
+                    <input type="number" name="year_to" min="1900" max="2100" value="{{ applied_filters.year_to or '' }}" class="filter-input-sidebar">
+                </div>
+
+                <!-- Checkboxes -->
+                <div class="filter-section-sidebar checkbox-group">
+                    <!-- Removed YouTube Only sidebar checkbox -->
+                    <label class="filter-checkbox-sidebar">
+                        <input type="checkbox" name="dubbed" value="on" {% if applied_filters.dubbed_only %}checked{% endif %}>
+                        <span>Dubbed</span>
+                    </label>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="sidebar-actions">
+                    <button type="submit" class="btn-sidebar-apply">
+                        <i class="fas fa-search"></i>
+                        Apply
+                    </button>
+                    <a href="{{ url_for('filter_movies') }}" class="btn-sidebar-reset">
+                        <i class="fas fa-redo"></i>
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="discover-main">
+            {% if request.args.get('q') and movies %}
+                <div class="search-results-summary" style="margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.2rem; color: var(--accent-primary); margin-bottom: 0.5rem;">Search Results for "{{ request.args.get('q') }}"</h2>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.7rem;">
+                        {% for movie in movies %}
+                        <li style="background: var(--bg-card); border-radius: 6px; padding: 0.5rem 1rem; font-weight: 500; color: var(--text-primary);">
+                            {{ movie.title }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% if movies %}
+                <!-- Movie Grid -->
+                <div class="movie-grid">
+                    {% for movie in movies %}
+                    <a href="{{ url_for('movie_detail', movie_identifier=movie.title|movie_slug) }}" class="movie-card">
+                        <div class="movie-poster">
+                            {% if movie.poster %}
+                            <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy">
+                            {% else %}
+                            <div class="movie-poster-placeholder">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            {% endif %}
+                            
+                            {% if movie.rating %}
+                            <div class="movie-rating">
+                                <i class="fas fa-star"></i>
+                                <span>{{ "%.1f"|format(movie.rating) }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="movie-info">
+                            <p class="movie-title">{{ movie.title }}</p>
+                            {% if movie.release_date %}
+                            <p class="movie-year">{{ movie.release_date[:4] }}</p>
+                            {% endif %}
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <!-- Load More Button (Instead of Pagination) -->
+                {% if total > per_page and page * per_page < total %}
+                <div style="display: flex; justify-content: center; margin-top: 3rem;">
+                    <a href="?{% for key, value in request.args.items() %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page + 1 }}" id="loadMoreBtn" class="btn-load-more">
+                        <i class="fas fa-refresh"></i> Load More Movies
+                    </a>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <p>No movies found matching your filters.</p>
+                    <a href="{{ url_for('filter_movies') }}" class="btn-reset-filters">
+                        Reset Filters
+                    </a>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+
+<script>
+    // Mobile-first Bottom Sheet Drawer
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const filtersSidebar = document.getElementById('filtersSidebar');
+    const filtersOverlay = document.getElementById('filtersOverlay');
+
+    function openFilters() {
+        filtersSidebar.style.display = 'block';
+        filtersOverlay.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeFilters() {
+        filtersSidebar.classList.add('closing');
+        setTimeout(() => {
+            filtersSidebar.style.display = 'none';
+            filtersSidebar.classList.remove('closing');
+            filtersOverlay.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+
+    sidebarToggle?.addEventListener('click', openFilters);
+    sidebarClose?.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeFilters();
+    });
+
+    filtersOverlay?.addEventListener('click', closeFilters);
+
+    // Trap touch/clicks for bottom sheet
+    const sidebar = document.querySelector('.filters-sidebar');
+    sidebar?.addEventListener('touchmove', (e) => {
+        e.stopPropagation();
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && filtersSidebar.style.display === 'block') {
+            closeFilters();
+        }
+    });
+
+    // Enable bottom nav bar on mobile
+    function updateBottomNav() {
+        const bottomNav = document.querySelector('.bottom-nav-bar');
+        if (window.innerWidth < 768) {
+            bottomNav?.classList.add('active');
+        } else {
+            bottomNav?.classList.remove('active');
+        }
+    }
+
+    updateBottomNav();
+    window.addEventListener('resize', updateBottomNav);
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+.popup-flash {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: #222;
+    color: #fff;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s, top 0.5s;
+}
+.popup-flash.show {
+    opacity: 1;
+    top: 40px;
+    pointer-events: auto;
+}
+.popup-success {
+    background: #28a745;
+}
+.popup-error {
+    background: #dc3545;
+}
+.popup-warning {
+    background: #ffc107;
+    color: #222;
+}
+.popup-info {
+    background: #17a2b8;
+}

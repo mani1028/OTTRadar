@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Discover - OTT Tracker{% endblock %}
+
+{% block content %}
+
+<div class="mobile-only">
+    <section class="mobile-page-header">
+        <h1 class="mobile-page-title">Discover</h1>
+        <p class="mobile-page-subtitle">Browse the full collection</p>
+    </section>
+</div>
+
+<section class="hero desktop-only" style="min-height: 250px;">
+    <div class="hero-content">
+        <h1>Discover Movies</h1>
+        <p>Browse our complete collection</p>
+    </div>
+</section>
+
+<!-- Filter Pills -->
+<div class="container">
+    <div class="filter-pills" id="filterContainer" style="display: flex; gap: 1rem; margin: 2rem 0; justify-content: center; flex-wrap: wrap;">
+        <button class="filter-pill active" data-filter="all" style="padding: 0.5rem 1.5rem; background: var(--accent-primary); border: 1px solid var(--accent-primary); color: white; border-radius: 999px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">All</button>
+        <button class="filter-pill" data-filter="originals" style="padding: 0.5rem 1.5rem; background: transparent; border: 1px solid var(--border); color: var(--text-primary); border-radius: 999px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">Telugu Originals</button>
+        <button class="filter-pill" data-filter="dubbed" style="padding: 0.5rem 1.5rem; background: transparent; border: 1px solid var(--border); color: var(--text-primary); border-radius: 999px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">Dubbed</button>
+    </div>
+</div>
+
+<!-- Movie Grid -->
+<div class="container">
+    {% if movies %}
+        <div class="movie-grid" id="movieGrid">
+            {% for movie in movies %}
+            <a href="{{ url_for('movie_detail', movie_identifier=movie.title|movie_slug) }}" style="text-decoration: none; color: inherit; display: block;" class="movie-link">
+            <div class="movie-card" 
+                 data-language="{{ movie.language }}" 
+                 data-is-dubbed="{{ 'true' if movie.is_dubbed else 'false' }}"
+                 data-filter-type="{% if movie.language == 'te' and not movie.is_dubbed %}telugu-original{% elif movie.is_dubbed %}dubbed{% else %}other{% endif %}">
+                <div class="poster">
+                    {% if movie.poster %}
+                        <img src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy">
+                    {% else %}
+                        <div class="poster-fallback"><i class="fas fa-film"></i></div>
+                    {% endif %}
+                </div>
+                <div class="card-info">
+                    <h3 class="card-title">{{ movie.title }}</h3>
+                    <div class="card-meta">
+                        <span>{{ movie.release_date[:4] if movie.release_date else 'N/A' }}</span>
+                        {% if movie.rating %}
+                        <span>⭐ {{ "%.1f"|format(movie.rating) }}</span>
+                        {% endif %}
+                    </div>
+                    {% if movie.language == 'te' and not movie.is_dubbed %}
+                    <div style="font-size: 0.75rem; color: #4CAF50; margin-top: 0.25rem;">🎬 Telugu Original</div>
+                    {% elif movie.is_dubbed %}
+                    <div style="font-size: 0.75rem; color: var(--accent-primary); margin-top: 0.25rem;">🔊 Dubbed</div>
+                    {% endif %}
+                </div>
+            </div>
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No movies available.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter pills functionality
+    const filterContainer = document.getElementById('filterContainer');
+    const movieGrid = document.getElementById('movieGrid');
+    if (filterContainer && movieGrid) {
+        // Store all filter pills
+        const filterPills = filterContainer.querySelectorAll('.filter-pill');
+        filterPills.forEach(pill => {
+            pill.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Update active state
+                filterPills.forEach(p => {
+                    p.style.background = 'transparent';
+                    p.style.borderColor = 'var(--border)';
+                    p.style.color = 'var(--text-primary)';
+                });
+                this.style.background = 'var(--accent-primary)';
+                this.style.borderColor = 'var(--accent-primary)';
+                this.style.color = 'white';
+                // Filter movies based on proper logic
+                const filterType = this.dataset.filter;
+                const cards = movieGrid.querySelectorAll('.movie-card');
+                cards.forEach(card => {
+                    const link = card.closest('a');
+                    const language = card.dataset.language;
+                    const isDubbed = card.dataset.isDubbed === 'true';
+                    let shouldShow = false;
+                    if (filterType === 'all') {
+                        shouldShow = true;
+                    } else if (filterType === 'originals') {
+                        // Telugu Originals: Telugu language AND not dubbed
+                        shouldShow = (language === 'te' && !isDubbed);
+                    } else if (filterType === 'dubbed') {
+                        // Dubbed: any movie that is dubbed
+                        shouldShow = isDubbed;
+                    }
+                    link.style.display = shouldShow ? 'block' : 'none';
+                });
+            });
+        });
+    }
+});
+</script>
+
+{% endblock %}

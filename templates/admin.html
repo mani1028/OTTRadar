@@ -1,0 +1,137 @@
+{% extends "base_admin.html" %}
+
+{% block header_title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<!-- Metrics Cards -->
+<div class="stats-grid">
+    <!-- Total Movies -->
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="fas fa-film"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ metrics.total_movies }}</h3>
+            <p>Total Movies</p>
+        </div>
+    </div>
+
+    <!-- Active Platforms -->
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="fas fa-tv"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ stats.total_unique_platforms }}</h3>
+            <p>OTT Platforms</p>
+        </div>
+    </div>
+
+    <!-- Free Movies -->
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="fas fa-ticket-alt"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ free_movie_count }}</h3>
+            <p>Free to Watch</p>
+        </div>
+    </div>
+
+    <!-- Data Issues -->
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ integrity_stats.ott_platforms.missing }}</h3>
+            <p>Missing Links</p>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Submissions Section -->
+<div class="card">
+    <div class="card-header">
+        <h2><i class="fas fa-inbox" style="color:var(--primary-color); margin-right:8px;"></i> Recent User Submissions</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Title / Request</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in submissions %}
+                <tr>
+                    <td>{{ sub.created_at.strftime('%b %d, %Y') }}</td>
+                    <td>
+                        <span style="padding:4px 8px; border-radius:4px; font-size:0.8rem; background:#eff6ff; color:#1d4ed8;">
+                            {{ sub.submission_type|upper }}
+                        </span>
+                    </td>
+                    <td>
+                        <strong>{{ sub.movie_title }}</strong>
+                        {% if sub.comment %}<br><small style="color:#64748b">{{ sub.comment }}</small>{% endif %}
+                    </td>
+                    <td>
+                        {% if sub.status == 'pending' %}
+                            <span style="color:#f59e0b; font-weight:600;">Pending</span>
+                        {% else %}
+                            <span style="color:#10b981; font-weight:600;">{{ sub.status|title }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex; gap:5px;">
+                            <form action="{{ url_for('admin_submission_update', id=sub.id) }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" style="background:none; border:none; cursor:pointer; color:#10b981;" title="Approve">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </button>
+                            </form>
+                            <form action="{{ url_for('admin_submission_delete', id=sub.id) }}" method="POST" style="display:inline;">
+                                <button type="submit" style="background:none; border:none; cursor:pointer; color:#ef4444;" title="Delete" onclick="return confirm('Delete this request?');">
+                                    <i class="fas fa-trash-alt fa-lg"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:2rem; color:#94a3b8;">
+                        No pending submissions. Good job!
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Data Completeness Progress Bars -->
+<div class="card">
+    <h3><i class="fas fa-database"></i> Data Completeness</h3>
+    <div class="integrity-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+        {% for key, stat in integrity_stats.items() %}
+        <div class="stat-progress-item">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem;">
+                <span>{{ stat.label }}</span>
+                <span style="font-weight: bold; color: {% if stat.percent > 90 %}#2ecc71{% elif stat.percent > 60 %}#f1c40f{% else %}#e74c3c{% endif %};">
+                    {{ stat.percent }}%
+                </span>
+            </div>
+            <div class="progress-bg" style="background: #f0f0f0; height: 8px; border-radius: 4px; overflow: hidden;">
+                <div class="progress-fill" style="width: {{ stat.percent }}%; height: 100%; background: {% if stat.percent > 90 %}#2ecc71{% elif stat.percent > 60 %}#f1c40f{% else %}#e74c3c{% endif %}; transition: width 0.5s ease;"></div>
+            </div>
+            <small style="color: var(--text-muted);">{{ stat.missing }} missing items</small>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

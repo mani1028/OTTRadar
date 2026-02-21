@@ -1,0 +1,147 @@
+{% extends "base_admin.html" %}
+
+{% block header_title %}System Operations{% endblock %}
+
+{% block content %}
+<p style="color:var(--text-muted); margin-bottom:2rem;">
+    Manually trigger background tasks. These scripts run on the server to fetch data and update the database.
+</p>
+
+<div class="ops-grid">
+    <!-- Discovery Script -->
+    <div class="ops-card">
+        <div class="ops-icon">
+            <i class="fas fa-satellite"></i>
+        </div>
+        <h3>Discover New Movies</h3>
+        <p style="color:var(--text-muted); font-size:0.9rem;">
+            Scans TMDB for trending and new movies.
+        </p>
+        <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+            <input type="number" id="disc-year" placeholder="Year (e.g. 2024)" style="width: 33%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <select id="disc-lang" style="width: 33%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">Language</option>
+                <option value="te">Telugu</option>
+                <option value="hi">Hindi</option>
+                <option value="ta">Tamil</option>
+                <option value="ml">Malayalam</option>
+                <option value="kn">Kannada</option>
+                <option value="en">English</option>
+                <option value="bn">Bengali</option>
+                <option value="mr">Marathi</option>
+                <option value="pa">Punjabi</option>
+                <option value="gu">Gujarati</option>
+                <option value="or">Odia</option>
+                <option value="ur">Urdu</option>
+                <option value="other">Other</option>
+            </select>
+            <input type="number" id="disc-limit" placeholder="Limit (20)" style="width: 33%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        <button class="btn-run" onclick="runScript('discover')">
+            <i class="fas fa-play"></i> Run Discovery
+        </button>
+    </div>
+
+    <!-- Enrichment Script -->
+    <div class="ops-card">
+        <div class="ops-icon">
+            <i class="fas fa-magic"></i>
+        </div>
+        <h3>Enrich Metadata</h3>
+        <p style="color:var(--text-muted); font-size:0.9rem;">
+            Fetches Trailers, Cast, Runtime, and OTT Links for incomplete movies.
+        </p>
+        <button class="btn-run" onclick="runScript('enrich')">
+            <i class="fas fa-play"></i> Run Enrichment
+        </button>
+    </div>
+
+    <!-- Daily Check -->
+    <div class="ops-card">
+        <div class="ops-icon">
+            <i class="fas fa-calendar-check"></i>
+        </div>
+        <h3>Daily OTT Checker</h3>
+        <p style="color:var(--text-muted); font-size:0.9rem;">
+            Updates "Upcoming" movies to "Available" if released today.
+        </button>
+        <button class="btn-run" onclick="runScript('daily_check')">
+            <i class="fas fa-play"></i> Run Check
+        </button>
+    </div>
+
+    <!-- Backup Script -->
+    <div class="ops-card">
+        <div class="ops-icon">
+            <i class="fas fa-database"></i>
+        </div>
+        <h3>Backup Database</h3>
+        <p style="color:var(--text-muted); font-size:0.9rem;">
+            Creates a full JSON backup of your current database.
+        </p>
+        <button class="btn-run" onclick="runScript('export')">
+            <i class="fas fa-save"></i> Create Backup
+        </button>
+    </div>
+</div>
+
+<!-- Output Modal (Hidden by default) -->
+<div id="scriptModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:2rem; border-radius:12px; width:400px; text-align:center;">
+        <div id="modalSpinner">
+            <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--primary-color);"></i>
+            <h3 style="margin-top:1rem;">Script Running...</h3>
+            <p>Please wait, this runs in the background.</p>
+        </div>
+        <div id="modalSuccess" style="display:none;">
+            <i class="fas fa-check-circle fa-3x" style="color:var(--success-color);"></i>
+            <h3 style="margin-top:1rem;">Success!</h3>
+            <p id="modalMsg"></p>
+            <button onclick="$('#scriptModal').fadeOut()" class="btn-run" style="width:auto; padding:0.5rem 2rem;">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function runScript(scriptName) {
+    $('#scriptModal').css('display', 'flex').hide().fadeIn();
+    $('#modalSpinner').show();
+    $('#modalSuccess').hide();
+
+    // Collect parameters based on which script is running
+    let payload = {};
+    if (scriptName === 'discover') {
+        if ($('#disc-year').val()) payload.year = $('#disc-year').val();
+        if ($('#disc-lang').val()) payload.language = $('#disc-lang').val();
+        if ($('#disc-limit').val()) payload.limit = $('#disc-limit').val();
+    } else if (scriptName === 'cleanup_year') {
+        if ($('#cleanup-year').val()) payload.year = $('#cleanup-year').val();
+    }
+
+    // Change to a fetch/AJAX call that sends JSON
+    $.ajax({
+        url: '/admin/run-script/' + scriptName,
+        type: 'POST',
+        contentType: 'application/json',
+        headers: {
+            'X-CSRFToken': "{{ csrf_token() }}"
+        },
+        data: JSON.stringify(payload),
+        success: function(data) {
+            $('#modalSpinner').hide();
+            $('#modalSuccess').show();
+            if(data.success) {
+                $('#modalMsg').text(data.message);
+            } else {
+                $('#modalMsg').text("Error: " + data.error);
+            }
+        },
+        error: function() {
+            $('#modalSpinner').hide();
+            $('#modalSuccess').show();
+            $('#modalMsg').text("Server connection failed.");
+        }
+    });
+}
+</script>
+{% endblock %}
