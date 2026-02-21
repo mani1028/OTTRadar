@@ -352,12 +352,12 @@ def suggest():
 def about():
     return render_template('public/about.html')
 
+# Example Flask route
 @app.route('/sitemap.xml')
 def sitemap():
-    movies = Movie.query.filter_by(is_active=True).limit(5000).all()
-    sitemap_xml = render_template('sitemap.xml', movies=movies, base_url=request.host_url)
-    response = app.make_response(sitemap_xml)
-    response.headers['Content-Type'] = 'application/xml'
+    base_url = "https://ottradar.app/"
+    movies = Movie.query.all()
+    return render_template('sitemap.xml', base_url=base_url, movies=movies), 200, {'Content-Type': 'application/xml'}
     return response
 
 @app.route('/robots.txt')
